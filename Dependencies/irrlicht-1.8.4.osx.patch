@@ -1,0 +1,71 @@
+diff -ru irrlicht-1.8.4/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm irrlicht-1.8.4/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm
+--- irrlicht-1.8.4/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm	2018-10-29 10:46:49.000000000 +1100
++++ irrlicht-1.8.4/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm	2018-10-29 10:53:58.000000000 +1100
+@@ -495,8 +495,8 @@
+ 		if(!CreationParams.WindowId) //load menus if standalone application
+ 		{
+ 			[[NSAutoreleasePool alloc] init];
+-			[NSApplication sharedApplication];
+-			[NSApp setDelegate:(id<NSApplicationDelegate>)[[[AppDelegate alloc] initWithDevice:this] autorelease]];
++			[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
++			[NSApp setDelegate:(id<NSApplicationDelegate>)[[[AppDelegate alloc] initWithDevice:this] autorelease]];
+ 			[NSBundle loadNibNamed:@"MainMenu" owner:[NSApp delegate]];
+ 			[NSApp finishLaunching];
+ 		}
+@@ -642,7 +642,7 @@
+ 						NSOpenGLPFASamples, (NSOpenGLPixelFormatAttribute)CreationParams.AntiAlias,
+ 						NSOpenGLPFAStencilSize, (NSOpenGLPixelFormatAttribute)(CreationParams.Stencilbuffer?1:0),
+ 						NSOpenGLPFADoubleBuffer,
+-						(NSOpenGLPixelFormatAttribute)nil
++						0
+ 					};
+ 
+ 					if (CreationParams.AntiAlias<2)
+@@ -668,7 +668,7 @@
+ 						{
+ 							// Third try without Doublebuffer
+ 							os::Printer::log("No doublebuffering available.", ELL_WARNING);
+-							windowattribs[14]=(NSOpenGLPixelFormatAttribute)nil;
++							windowattribs[14]=0;
+ 						}
+ 
+ 						format = [[NSOpenGLPixelFormat alloc] initWithAttributes:windowattribs];
+--- irrlicht-1.8.4/source/Irrlicht/Makefile	2016-07-09 13:02:32.000000000 +1000
++++ irrlicht-1.8.4/source/Irrlicht/Makefile	2018-10-29 15:33:23.000000000 +1100
+@@ -61,7 +61,7 @@
+ 
+ ###############
+ #Compiler flags
+-CXXINCS = -I../../include -Izlib -Ijpeglib -Ilibpng
++CXXINCS = -I. -I../../include -Izlib -Ijpeglib -Ilibpng
+ CPPFLAGS += $(CXXINCS) -DIRRLICHT_EXPORTS=1
+ CXXFLAGS += -Wall -pipe -fno-exceptions -fno-rtti -fstrict-aliasing
+ ifndef NDEBUG
+@@ -99,7 +99,7 @@
+ staticlib_osx sharedlib_osx: LDFLAGS += --no-export-all-symbols --add-stdcall-alias
+ sharedlib_osx: LDFLAGS += -L/usr/X11R6/lib$(LIBSELECT) -lGL -lXxf86vm
+ # for non-X11 app
+-#sharedlib_osx: LDFLAGS += -framework cocoa -framework carbon -framework opengl -framework IOKit
++sharedlib_osx: LDFLAGS += -framework Cocoa -framework carbon -framework OpenGL -framework IOKit
+ 
+ #Windows specific options
+ IRRLICHT_DLL := ../../bin/Win32-gcc/Irrlicht.dll
+@@ -115,6 +115,10 @@
+ SHARED_FULLNAME = $(SHARED_LIB).$(VERSION)
+ SONAME = $(SHARED_LIB).$(VERSION_MAJOR).$(VERSION_MINOR)
+ 
++ifeq ($(SYSTEM), MacOSX)
++CXXFLAGS += -xobjective-c++
++endif
++
+ ####################
+ # All target, builds Irrlicht as static lib (libIrrlicht.a) and copies it into lib/Linux
+ all linux: staticlib
+@@ -139,6 +143,7 @@
+ sharedlib_win32: $(IRRLICHT_DLL)
+ ../../bin/Win32-gcc/Irrlicht.dll: $(LINKOBJ)
+ 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -shared -o $@ $^ $(LDFLAGS) -Wl,--out-implib,../../lib/Win32-gcc/$(STATIC_LIB)
++
+ # Copies static lib into /lib/Win32-gcc
+ staticlib_win32: $(STATIC_LIB)
+ 	cp $^ $(LIB_PATH)
