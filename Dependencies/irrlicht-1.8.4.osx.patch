@@ -6,7 +6,7 @@ diff -ru irrlicht-1.8.4/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm irrlicht-1.8.
  		{
  			[[NSAutoreleasePool alloc] init];
 -			[NSApplication sharedApplication];
--			[NSApp setDelegate:(id<NSApplicationDelegate>)[[[AppDelegate alloc] initWithDevice:this] autorelease]];
+-			[NSApp setDelegate:(id<NSFileManagerDelegate>)[[[AppDelegate alloc] initWithDevice:this] autorelease]];
 +			[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 +			[NSApp setDelegate:(id<NSApplicationDelegate>)[[[AppDelegate alloc] initWithDevice:this] autorelease]];
  			[NSBundle loadNibNamed:@"MainMenu" owner:[NSApp delegate]];
