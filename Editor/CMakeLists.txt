@@ -50,7 +50,7 @@ if(APPLE)
 endif()
 
 if(APPLE)
-    add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE ${SOURCE_FILES})
+    add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE ${SOURCES})
 else()
     add_executable(${EXECUTABLE_NAME} ${SOURCES})
 

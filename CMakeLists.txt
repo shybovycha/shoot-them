@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 
 project(shoot-them VERSION 1.0.1 LANGUAGES CXX)
 
+include(ExternalProject)
 include(FetchContent)
 
 if (APPLE)
@@ -62,6 +63,15 @@ if(NOT IRRLICHT_LIBRARY_PATH)
     endif()
 
     set(IRRLICHT_PATH ${irrlicht_SOURCE_DIR})
+
+    if(APPLE)
+        ExternalProject_Add(irrlicht-dep
+            SOURCE_DIR "${IRRLICHT_PATH}/source/Irrlicht"
+            BUILD_IN_SOURCE true
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND "make"
+        )
+    endif()
 
     add_library(irrlicht SHARED IMPORTED GLOBAL)
 

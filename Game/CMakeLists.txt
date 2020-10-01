@@ -53,7 +53,7 @@ if(APPLE)
     file(GLOB RESOURCE_FILES Resources)
     set_source_files_properties(${RESOURCE_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION "MacOS")
 
-    add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE ${SOURCE_FILES} ${RESOURCE_FILES})
+    add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE ${SOURCES} ${RESOURCE_FILES})
 else()
     add_executable(${EXECUTABLE_NAME} ${SOURCES})
 
