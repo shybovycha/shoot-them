@@ -53,31 +53,9 @@ void GameState::nextLevelLoaded()
     ++currentLevel;
 }
 
-void GameState::enqueue(QueueAction* action)
-{
-    actionQueue.push(action);
-}
-
-const bool GameState::hasActions() const
-{
-    return actionQueue.size() > 0;
-}
-
 void GameState::setCurrentState(GameStateType _state)
 {
     currentState = _state;
-}
-
-QueueAction* GameState::nextAction()
-{
-    if (actionQueue.size() < 1)
-    {
-        return nullptr;
-    }
-
-    auto action = actionQueue.front();
-    actionQueue.pop();
-    return action;
 }
 
 void GameState::setLevels(std::vector<std::shared_ptr<Level>> _levels)

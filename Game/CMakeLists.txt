@@ -38,7 +38,7 @@ set(SOURCES
     "src/core/SceneNode.h"
     "src/core/SceneNode.cpp"
     "src/renderer/IrrlichtSceneNode.h"
-    "src/renderer/IrrlichtSceneNode.cpp")
+    "src/renderer/IrrlichtSceneNode.cpp" src/core/State.cpp src/core/State.h src/game/GameActionDispatcher.cpp src/game/GameActionDispatcher.h src/core/ActionHandler.cpp src/core/ActionHandler.h src/game/GameActionHandler.cpp src/game/GameActionHandler.h src/game/MainMenu.cpp src/game/MainMenu.h src/game/EndGameMenu.cpp src/game/EndGameMenu.h src/core/SoundEngine.cpp src/core/SoundEngine.h src/core/UIElement.cpp src/core/UIElement.h)
 
 set(EXECUTABLE_NAME game)
 

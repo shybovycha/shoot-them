@@ -3,15 +3,15 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <queue>
 #include <iostream>
 
-#include "../core/QueueAction.h"
+#include "../core/State.h"
+
 #include "Level.h"
 #include "PlayerState.h"
 #include "Score.h"
 
-class GameState
+class GameState : public State
 {
 public:
     GameState();
@@ -28,13 +28,9 @@ public:
 
     const int getLevelsCnt() const;
 
-    const bool hasActions() const;
-
     const bool isGameOver() const;
 
     const bool isGameStarted() const;
-
-    QueueAction* nextAction();
 
     const std::shared_ptr<Level> getNextLevel() const;
 
@@ -47,8 +43,6 @@ private:
 
     void nextLevelLoaded();
 
-    void enqueue(QueueAction* action);
-
     void setCurrentState(GameStateType _state);
 
     void startGame();
@@ -59,8 +53,6 @@ private:
 
     std::shared_ptr<Score> currentScore;
     std::shared_ptr<PlayerState> playerState;
-
-    std::queue<QueueAction*> actionQueue;
 
     std::vector<std::shared_ptr<Level>> levels;
     size_t currentLevel;

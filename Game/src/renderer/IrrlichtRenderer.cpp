@@ -59,6 +59,21 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
     irr::gui::IGUIFont* font = guienv->getFont("calibri.xml");
     guienv->getSkin()->setFont(font);
 
+    const auto gameOverText = L"Game over";
+    const auto screenSize = driver->getScreenSize();
+    const auto textSize = font->getDimension(gameOverText);
+
+    gameOverLabel = guienv->addStaticText(
+            gameOverText,
+            irr::core::rect<irr::s32>(
+                    (screenSize.Width / 2) - (textSize.Width / 2),
+                    (screenSize.Height / 2) - (textSize.Height / 2),
+                    (screenSize.Width / 2) + (textSize.Width / 2),
+                    (screenSize.Height / 2) + (textSize.Height / 2)
+            ),
+            false
+    );
+
     // TODO: move this to scene config too
     smgr->addLightSceneNode(nullptr, irr::core::vector3df(0, 20, 0), irr::video::SColorf(0.5f, 0.5f, 0.5f, 0.5f), 3000,
             0);
@@ -87,156 +102,6 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
 
     hud = std::make_shared<IrrlichtHUD>(driver, guienv, gameState);
     hud->init();
-}
-
-void IrrlichtRenderer::processActionQueue()
-{
-    while (gameState->hasActions())
-    {
-        auto action = gameState->nextAction();
-
-        switch (action->getType())
-        {
-        case QueueActionType::LOAD_FIRST_LEVEL:
-            processAction(reinterpret_cast<LoadFirstLevelAction*>(action));
-            break;
-        case QueueActionType::LOAD_NEXT_LEVEL:
-            processAction(reinterpret_cast<LoadNextLevelAction*>(action));
-            break;
-        case QueueActionType::PLAY_SOUND:
-            processAction(reinterpret_cast<PlaySoundAction*>(action));
-            break;
-        case QueueActionType::TARGET_ELIMINATED:
-            processAction(reinterpret_cast<TargetEliminatedAction*>(action));
-            break;
-        case QueueActionType::START_NEW_GAME:
-            processAction(reinterpret_cast<StartNewGameAction*>(action));
-            break;
-        case QueueActionType::QUIT:
-            processAction(reinterpret_cast<QuitAction*>(action));
-            break;
-        case QueueActionType::MAIN_MENU:
-            processAction(reinterpret_cast<MainMenuAction*>(action));
-            break;
-        case QueueActionType::HIDE_MAIN_MENU:
-            processAction(reinterpret_cast<HideMainMenuAction*>(action));
-            break;
-        case QueueActionType::GAME_OVER:
-            processAction(reinterpret_cast<GameOverAction*>(action));
-            break;
-        }
-    }
-}
-
-void IrrlichtRenderer::processAction(PlaySoundAction* action)
-{
-    soundEngine->play2D(action->getSoundFile().c_str(), false);
-}
-
-void IrrlichtRenderer::processAction(LoadFirstLevelAction* action)
-{
-    loadLevel(action->getLevel());
-
-    actionDispatcher->firstLevelLoaded();
-}
-
-void IrrlichtRenderer::processAction(LoadNextLevelAction* action)
-{
-    if (action->getNextLevel() == nullptr)
-    {
-        actionDispatcher->gameOver();
-        return;
-    }
-
-    // unload existing level data
-    unloadLevel(action->getPreviousLevel());
-
-    // load next level
-    loadLevel(action->getNextLevel());
-
-    actionDispatcher->nextLevelLoaded();
-}
-
-void IrrlichtRenderer::processAction(TargetEliminatedAction* action)
-{
-    // hide in here, remove when the next level is loaded
-    action->getTarget()->setVisible(false);
-    actionDispatcher->targetEliminated();
-
-    if (gameState->getCurrentScore()->getTargetsEliminated() >= gameState->getCurrentLevel()->getTargets().size())
-    {
-        // TODO: show next level menu
-        actionDispatcher->loadNextLevel();
-    }
-}
-
-void IrrlichtRenderer::processAction(StartNewGameAction* action)
-{
-    if (gameOverLabel != nullptr)
-    {
-        gameOverLabel->remove();
-        gameOverLabel = nullptr;
-    }
-
-    if (gameState->isGameStarted())
-    {
-        unloadLevel(gameState->getCurrentLevel());
-    }
-
-    actionDispatcher->loadFirstLevel();
-    device->getCursorControl()->setVisible(false);
-    mainMenuWindow->setVisible(false);
-}
-
-void IrrlichtRenderer::processAction(MainMenuAction* action)
-{
-    if (gameOverLabel != nullptr)
-    {
-        gameOverLabel->setVisible(false);
-    }
-
-    mainMenuWindow->setVisible(true);
-
-    if (gameState->isGameOver() || !gameState->isGameStarted())
-    {
-        mainMenuWindow->getElementFromId(CONTINUE_BUTTON_ID)->setEnabled(false);
-    }
-    else
-    {
-        mainMenuWindow->getElementFromId(CONTINUE_BUTTON_ID)->setEnabled(true);
-    }
-    
-    device->getCursorControl()->setVisible(true);
-}
-
-void IrrlichtRenderer::processAction(QuitAction* action)
-{
-    device->closeDevice();
-}
-
-void IrrlichtRenderer::processAction(HideMainMenuAction* action)
-{
-    device->getCursorControl()->setVisible(false);
-    mainMenuWindow->setVisible(false);
-}
-
-void IrrlichtRenderer::processAction(GameOverAction* action)
-{
-    const auto text = L"Game over";
-    const auto screenSize = driver->getScreenSize();
-    const auto font = guienv->getSkin()->getFont();
-    const auto textSize = font->getDimension(text);
-
-    gameOverLabel = guienv->addStaticText(
-            L"Game over",
-            irr::core::rect<irr::s32>(
-                    (screenSize.Width / 2) - (textSize.Width / 2),
-                    (screenSize.Height / 2) - (textSize.Height / 2),
-                    (screenSize.Width / 2) + (textSize.Width / 2),
-                    (screenSize.Height / 2) + (textSize.Height / 2)
-            ),
-            false
-    );
 }
 
 void IrrlichtRenderer::render()

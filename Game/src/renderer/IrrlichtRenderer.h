@@ -25,26 +25,6 @@ public:
 
     virtual void init(std::shared_ptr<Settings> settings);
 
-    virtual void processActionQueue();
-
-    void processAction(PlaySoundAction* action);
-
-    void processAction(LoadFirstLevelAction* action);
-
-    void processAction(LoadNextLevelAction* action);
-
-    void processAction(TargetEliminatedAction* action);
-
-    void processAction(StartNewGameAction* action);
-
-    void processAction(MainMenuAction* action);
-
-    void processAction(HideMainMenuAction* action);
-
-    void processAction(QuitAction* action);
-
-    void processAction(GameOverAction* action);
-
     virtual void render();
 
     virtual void shutdown();
@@ -72,11 +52,14 @@ protected:
     void updateTimer();
 
 private:
-    std::shared_ptr<irr::IEventReceiver> eventReceiver;
     std::shared_ptr<ActionDispatcher> actionDispatcher;
+
+    std::shared_ptr<IrrlichtEventReceiver> eventReceiver;
+
     std::shared_ptr<IrrlichtHUD> hud;
 
     irr::ITimer* timer = 0;
+
     irr::gui::IGUIWindow* msgbox = 0;
     irr::gui::IGUIListBox* hiscoreTable = 0;
     irr::gui::IGUIWindow* mainMenuWindow = 0;
