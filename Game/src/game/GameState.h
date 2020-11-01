@@ -5,13 +5,14 @@
 #include <vector>
 #include <iostream>
 
-#include "../core/State.h"
+#include "../core/QueueAction.h"
+#include "../core/StateManager.h"
 
 #include "Level.h"
 #include "PlayerState.h"
 #include "Score.h"
 
-class GameState : public State
+class GameState
 {
 public:
     GameState();
@@ -34,9 +35,7 @@ public:
 
     const std::shared_ptr<Level> getNextLevel() const;
 
-private:
-    friend class ActionDispatcher;
-
+    // modifiers
     void timeElapsed(unsigned long time);
 
     void setLevels(std::vector<std::shared_ptr<Level>> _levels);
@@ -60,3 +59,5 @@ private:
     bool hasGameStarted = false;
     bool hasGameEnded = false;
 };
+
+template class StateManager<GameState>;

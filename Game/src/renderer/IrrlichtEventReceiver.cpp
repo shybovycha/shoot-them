@@ -1,10 +1,9 @@
 #include "IrrlichtEventReceiver.h"
 
-IrrlichtEventReceiver::IrrlichtEventReceiver(std::shared_ptr<GameState> _gameState,
-        std::shared_ptr<ActionDispatcher> _actionDispatcher, irr::scene::ISceneManager* _sceneManager,
+IrrlichtEventReceiver::IrrlichtEventReceiver(
+        irr::scene::ISceneManager* _sceneManager,
         irr::scene::ICameraSceneNode* _camera) :
-        actionDispatcher(_actionDispatcher),
-        gameState(_gameState),
+        actionDispatcher(std::make_unique<GameActionDispatcher>()),
         sceneManager(_sceneManager),
         camera(_camera)
 {
@@ -12,6 +11,8 @@ IrrlichtEventReceiver::IrrlichtEventReceiver(std::shared_ptr<GameState> _gameSta
 
 bool IrrlichtEventReceiver::OnEvent(const irr::SEvent& event)
 {
+    auto gameState = StateManager<GameState>::getInstance()->getState();
+
     if (gameState->getCurrentState() == GameStateType::PLAYING)
     {
         if (event.EventType == irr::EET_MOUSE_INPUT_EVENT)
@@ -22,7 +23,7 @@ bool IrrlichtEventReceiver::OnEvent(const irr::SEvent& event)
                 const irr::f32 RAY_OFFSET_DISTANCE = 10.0f;
 
                 irr::core::vector3df cameraDirection = camera->getTarget() - camera->getAbsolutePosition();
-                
+
                 irr::core::line3df ray(
                     camera->getAbsolutePosition() + (cameraDirection * RAY_OFFSET_DISTANCE),
                     cameraDirection * MAX_RAYCAST_DISTANCE
@@ -39,7 +40,7 @@ bool IrrlichtEventReceiver::OnEvent(const irr::SEvent& event)
             }
         }
     }
-    
+
     if (gameState->getCurrentState() == GameStateType::PLAYING || gameState->getCurrentState() == GameStateType::END_GAME)
     {
         if (event.EventType == irr::EET_KEY_INPUT_EVENT)
@@ -50,7 +51,7 @@ bool IrrlichtEventReceiver::OnEvent(const irr::SEvent& event)
             }
         }
     }
-    
+
     {
         if (event.EventType == irr::EET_GUI_EVENT)
         {

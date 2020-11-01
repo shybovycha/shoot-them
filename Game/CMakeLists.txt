@@ -9,8 +9,7 @@ set(SOURCES
     "src/game/Score.h"
     "src/game/PlayerState.h"
     "src/game/GameState.h"
-    "src/core/ActionDispatcher.h"
-    "src/renderer/IrrlichtEventReceiver.h"
+        "src/renderer/IrrlichtEventReceiver.h"
     "src/core/Renderer.h"
     "src/core/ResourceManager.h"
     "src/core/ModernResourceManager.h"
@@ -19,8 +18,7 @@ set(SOURCES
     "src/core/QueueAction.h"
     "src/core/Application.cpp"
     "src/game/GameState.cpp"
-    "src/core/ActionDispatcher.cpp"
-    "src/renderer/IrrlichtEventReceiver.cpp"
+        "src/renderer/IrrlichtEventReceiver.cpp"
     "src/renderer/IrrlichtRenderer.cpp"
     "src/game/Level.cpp"
     "src/core/ModernResourceManager.cpp"
@@ -38,7 +36,7 @@ set(SOURCES
     "src/core/SceneNode.h"
     "src/core/SceneNode.cpp"
     "src/renderer/IrrlichtSceneNode.h"
-    "src/renderer/IrrlichtSceneNode.cpp" src/core/State.cpp src/core/State.h src/game/GameActionDispatcher.cpp src/game/GameActionDispatcher.h src/core/ActionHandler.cpp src/core/ActionHandler.h src/game/GameActionHandler.cpp src/game/GameActionHandler.h src/game/MainMenu.cpp src/game/MainMenu.h src/game/EndGameMenu.cpp src/game/EndGameMenu.h src/core/SoundEngine.cpp src/core/SoundEngine.h src/core/UIElement.cpp src/core/UIElement.h)
+    "src/renderer/IrrlichtSceneNode.cpp" src/game/GameActionDispatcher.cpp src/game/GameActionDispatcher.h src/core/ActionHandler.h src/game/GameActionHandler.cpp src/game/GameActionHandler.h src/core/SoundEngine.cpp src/core/SoundEngine.h src/core/StateManager.cpp src/core/StateManager.h src/renderer/IrrKlangSoundEngine.cpp src/renderer/IrrKlangSoundEngine.h src/renderer/IrrlichtApplication.cpp src/renderer/IrrlichtApplication.h src/game/GameGUI.cpp src/game/GameGUI.h src/renderer/IrrlichtGameGUI.cpp src/renderer/IrrlichtGameGUI.h)
 
 set(EXECUTABLE_NAME game)
 

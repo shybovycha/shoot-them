@@ -73,3 +73,13 @@ HideMainMenuAction::HideMainMenuAction() : QueueAction(QueueActionType::HIDE_MAI
 GameOverAction::GameOverAction() : QueueAction(QueueActionType::GAME_OVER)
 {
 }
+
+LevelsLoadedAction::LevelsLoadedAction(std::vector<std::shared_ptr<Level>> levels)
+        : QueueAction(QueueActionType::LEVELS_LOADED), levels(std::move(levels))
+{
+}
+
+std::vector<std::shared_ptr<Level>> LevelsLoadedAction::getLevels() const
+{
+    return levels;
+}

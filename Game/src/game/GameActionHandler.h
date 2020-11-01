@@ -3,34 +3,44 @@
 #include <utility>
 
 #include "../core/ActionHandler.h"
+#include "../core/StateManager.h"
 
 #include "GameActionDispatcher.h"
+#include "GameState.h"
+#include "GameGUI.h"
 
 class GameActionHandler : public ActionHandler
 {
 public:
-    GameActionHandler(std::shared_ptr<ActionDispatcher> actionDispatcher);
+    GameActionHandler(std::unique_ptr<GameGUI> gameGUI);
 
-    virtual void handle(QueueAction* action, std::shared_ptr<State> state) override;
+    virtual void handleAction(QueueAction* action) override;
 
 protected:
-    std::shared_ptr<GameActionDispatcher> getActionDispatcher() const;
+    void processAction(LoadFirstLevelAction* action);
 
-    void processAction(PlaySoundAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(LoadNextLevelAction* action);
 
-    void processAction(LoadFirstLevelAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(TargetEliminatedAction* action);
 
-    void processAction(LoadNextLevelAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(StartNewGameAction* action);
 
-    void processAction(TargetEliminatedAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(MainMenuAction* action);
 
-    void processAction(StartNewGameAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(HideMainMenuAction* action);
 
-    void processAction(MainMenuAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(QuitAction* action);
 
-    void processAction(HideMainMenuAction* action, const std::shared_ptr<GameState>& gameState);
+    void processAction(GameOverAction* action);
 
-    void processAction(QuitAction* action, const std::shared_ptr<GameState>& gameState);
+    virtual void loadLevel(std::shared_ptr<Level> level) = 0;
 
-    void processAction(GameOverAction* action, const std::shared_ptr<GameState>& gameState);
+    virtual void unloadLevel(std::shared_ptr<Level> level) = 0;
+
+    virtual void quit() = 0;
+
+    void setGameGUI(std::shared_ptr<GameGUI> gameGUI);
+
+    std::unique_ptr<GameActionDispatcher> actionDispatcher;
+    std::shared_ptr<GameGUI> gameGUI;
 };

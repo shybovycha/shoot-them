@@ -4,6 +4,7 @@
 #include <string>
 
 #include "../game/Level.h"
+#include "SceneNode.h"
 
 enum class GameStateType
 {
@@ -25,6 +26,7 @@ enum class GameStateType
 enum class QueueActionType
 {
     HIDE_MAIN_MENU,
+    LEVELS_LOADED,
     LOAD_FIRST_LEVEL,
     LOAD_NEXT_LEVEL,
     MAIN_MENU,
@@ -45,6 +47,17 @@ public:
 
 private:
     QueueActionType type;
+};
+
+class LevelsLoadedAction : public QueueAction
+{
+public:
+    LevelsLoadedAction(std::vector<std::shared_ptr<Level>> levels);
+
+    std::vector<std::shared_ptr<Level>> getLevels() const;
+
+private:
+    std::vector<std::shared_ptr<Level>> levels;
 };
 
 class PlaySoundAction : public QueueAction

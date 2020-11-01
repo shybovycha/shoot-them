@@ -1,7 +1,6 @@
-#include "core/ActionDispatcher.h"
-#include "core/Application.h"
-#include "renderer/IrrlichtRenderer.h"
 #include "core/ModernResourceManager.h"
+#include "renderer/IrrlichtApplication.h"
+#include "renderer/IrrlichtRenderer.h"
 
 #ifdef _IRR_WINDOWS_
 #pragma comment(lib, "Irrlicht.lib")
@@ -27,11 +26,9 @@ int main()
 {
     std::shared_ptr<ResourceManager> resourceManager = std::make_shared<ModernResourceManager>();
     std::shared_ptr<GameState> gameState = std::make_shared<GameState>();
-    std::shared_ptr<ActionDispatcher> actionDispatcher = std::make_shared<ActionDispatcher>(gameState);
-    std::shared_ptr<Renderer> renderer = std::make_shared<IrrlichtRenderer>(gameState, actionDispatcher);
+    std::shared_ptr<Renderer> renderer = std::make_shared<IrrlichtRenderer>();
 
-    std::shared_ptr<Application> application = std::make_shared<Application>(renderer, gameState, resourceManager,
-            actionDispatcher);
+    std::unique_ptr<IrrlichtApplication> application = std::make_unique<IrrlichtApplication>(renderer, resourceManager);
 
     application->run();
 

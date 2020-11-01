@@ -1,65 +1,55 @@
 #include "GameActionHandler.h"
 
-GameActionHandler::GameActionHandler(std::shared_ptr<ActionDispatcher> _actionDispatcher) : ActionHandler(std::move(_actionDispatcher))
+GameActionHandler::GameActionHandler(std::unique_ptr<GameGUI> _gameGUI) : ActionHandler(),
+        actionDispatcher(std::make_unique<GameActionDispatcher>()),
+        gameGUI(std::move(_gameGUI))
 {
+    StateManager<GameState>::getInstance()->subscribe(this);
 }
 
-std::shared_ptr<GameActionDispatcher> GameActionHandler::getActionDispatcher() const
-{
-    return std::dynamic_pointer_cast<GameActionDispatcher>(actionDispatcher);
-}
-
-void GameActionHandler::handle(QueueAction* action, std::shared_ptr<State> state)
+void GameActionHandler::handleAction(QueueAction* action)
 {
     switch (action->getType())
     {
     case QueueActionType::LOAD_FIRST_LEVEL:
-        processAction(reinterpret_cast<LoadFirstLevelAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<LoadFirstLevelAction*>(action));
         break;
     case QueueActionType::LOAD_NEXT_LEVEL:
-        processAction(reinterpret_cast<LoadNextLevelAction*>(action), std::dynamic_pointer_cast<GameState>(state));
-        break;
-    case QueueActionType::PLAY_SOUND:
-        processAction(reinterpret_cast<PlaySoundAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<LoadNextLevelAction*>(action));
         break;
     case QueueActionType::TARGET_ELIMINATED:
-        processAction(reinterpret_cast<TargetEliminatedAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<TargetEliminatedAction*>(action));
         break;
     case QueueActionType::START_NEW_GAME:
-        processAction(reinterpret_cast<StartNewGameAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<StartNewGameAction*>(action));
         break;
     case QueueActionType::QUIT:
-        processAction(reinterpret_cast<QuitAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<QuitAction*>(action));
         break;
     case QueueActionType::MAIN_MENU:
-        processAction(reinterpret_cast<MainMenuAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<MainMenuAction*>(action));
         break;
     case QueueActionType::HIDE_MAIN_MENU:
-        processAction(reinterpret_cast<HideMainMenuAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<HideMainMenuAction*>(action));
         break;
     case QueueActionType::GAME_OVER:
-        processAction(reinterpret_cast<GameOverAction*>(action), std::dynamic_pointer_cast<GameState>(state));
+        processAction(reinterpret_cast<GameOverAction*>(action));
         break;
     }
 }
 
-void GameActionHandler::processAction(PlaySoundAction* action, const std::shared_ptr<GameState>& gameState)
-{
-    soundEngine->play2D(action->getSoundFile().c_str(), false);
-}
-
-void GameActionHandler::processAction(LoadFirstLevelAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(LoadFirstLevelAction* action)
 {
     loadLevel(action->getLevel());
 
-    getActionDispatcher()->firstLevelLoaded();
+    actionDispatcher->firstLevelLoaded();
 }
 
-void GameActionHandler::processAction(LoadNextLevelAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(LoadNextLevelAction* action)
 {
     if (action->getNextLevel() == nullptr)
     {
-        getActionDispatcher()->gameOver();
+        actionDispatcher->gameOver();
         return;
     }
 
@@ -69,73 +59,62 @@ void GameActionHandler::processAction(LoadNextLevelAction* action, const std::sh
     // load next level
     loadLevel(action->getNextLevel());
 
-    getActionDispatcher()->nextLevelLoaded();
+    actionDispatcher->nextLevelLoaded();
 }
 
-void GameActionHandler::processAction(TargetEliminatedAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(TargetEliminatedAction* action)
 {
+    auto gameState = StateManager<GameState>::getInstance()->getState();
+
     // hide in here, remove when the next level is loaded
     action->getTarget()->setVisible(false);
-    getActionDispatcher()->targetEliminated();
+    actionDispatcher->targetEliminated();
 
     if (gameState->getCurrentScore()->getTargetsEliminated() >= gameState->getCurrentLevel()->getTargets().size())
     {
         // TODO: show next level menu
-        getActionDispatcher()->loadNextLevel();
+        actionDispatcher->loadNextLevel();
     }
 }
 
-void GameActionHandler::processAction(StartNewGameAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(StartNewGameAction* action)
 {
-    if (gameOverLabel != nullptr)
-    {
-        gameOverLabel->remove();
-        gameOverLabel = nullptr;
-    }
+    auto gameState = StateManager<GameState>::getInstance()->getState();
+
+    gameGUI->hideGameOverMenu();
 
     if (gameState->isGameStarted())
     {
         unloadLevel(gameState->getCurrentLevel());
     }
 
-    getActionDispatcher()->loadFirstLevel();
-    device->getCursorControl()->setVisible(false);
-    mainMenuWindow->setVisible(false);
+    actionDispatcher->loadFirstLevel();
+    gameGUI->hideMainMenu();
 }
 
-void GameActionHandler::processAction(MainMenuAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(MainMenuAction* action)
 {
-    if (gameOverLabel != nullptr)
-    {
-        gameOverLabel->setVisible(false);
-    }
-
-    mainMenuWindow->setVisible(true);
-
-    if (gameState->isGameOver() || !gameState->isGameStarted())
-    {
-        mainMenuWindow->getElementFromId(CONTINUE_BUTTON_ID)->setEnabled(false);
-    }
-    else
-    {
-        mainMenuWindow->getElementFromId(CONTINUE_BUTTON_ID)->setEnabled(true);
-    }
-
-    device->getCursorControl()->setVisible(true);
+    gameGUI->hideGameOverMenu();
+    gameGUI->showMainMenu();
 }
 
-void GameActionHandler::processAction(QuitAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(QuitAction* action)
 {
-    device->closeDevice();
+    quit();
 }
 
-void GameActionHandler::processAction(HideMainMenuAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(HideMainMenuAction* action)
 {
-    device->getCursorControl()->setVisible(false);
-    mainMenuWindow->setVisible(false);
+    gameGUI->hideCursor();
+    gameGUI->hideMainMenu();
 }
 
-void GameActionHandler::processAction(GameOverAction* action, const std::shared_ptr<GameState>& gameState)
+void GameActionHandler::processAction(GameOverAction* action)
 {
-    gameOverLabel->setVisible(true);
+    gameGUI->showGameOverMenu();
+}
+
+void GameActionHandler::setGameGUI(std::shared_ptr<GameGUI> _gameGUI)
+{
+    gameGUI = std::move(_gameGUI);
 }

@@ -1,10 +1,8 @@
 #include "IrrlichtHUD.h"
 
-IrrlichtHUD::IrrlichtHUD(irr::video::IVideoDriver* _driver, irr::gui::IGUIEnvironment* _guienv,
-        std::shared_ptr<GameState> _gameState) :
+IrrlichtHUD::IrrlichtHUD(irr::video::IVideoDriver* _driver, irr::gui::IGUIEnvironment* _guienv) :
         driver(_driver),
         guienv(_guienv),
-        gameState(_gameState),
         bulletTexture(nullptr),
         targetTexture(nullptr),
         statsFont(nullptr)

@@ -6,14 +6,14 @@
 #include <irrlicht.h>
 
 #include "../game/GameState.h"
+#include "../core/StateManager.h"
 
 const irr::video::SColor TARGET_COUNT_COLOR(255, 232, 141, 40);
 
 class IrrlichtHUD
 {
 public:
-    IrrlichtHUD(irr::video::IVideoDriver* _driver, irr::gui::IGUIEnvironment* _guienv,
-            std::shared_ptr<GameState> _gameState);
+    IrrlichtHUD(irr::video::IVideoDriver* _driver, irr::gui::IGUIEnvironment* _guienv);
 
     void init();
 

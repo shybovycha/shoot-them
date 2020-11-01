@@ -1,23 +1,21 @@
 #include "Application.h"
 
-Application::Application(std::shared_ptr<Renderer> _renderer, std::shared_ptr<GameState> _gameState,
-        std::shared_ptr<ResourceManager> _resourceManager, std::shared_ptr<ActionDispatcher> _actionDispatcher) :
-        renderer(_renderer),
-        gameState(_gameState),
-        actionDispatcher(_actionDispatcher),
-        resourceManager(_resourceManager)
+template<class T>
+Application<T>::Application(std::shared_ptr<Renderer> _renderer, std::shared_ptr<ResourceManager> _resourceManager)
+        : renderer(_renderer), resourceManager(_resourceManager)
 {
 }
 
-void Application::run()
+template<class T>
+void Application<T>::run()
 {
-    actionDispatcher->levelsLoaded(resourceManager->loadLevels());
+    StateManager<T>::getInstance()->dispatch(new LevelsLoadedAction(resourceManager->loadLevels()));
 
     renderer->init(resourceManager->loadSettings());
 
     while (renderer->isRunning())
     {
-        renderer->processActionQueue();
+        StateManager<T>::getInstance()->processActionQueue();
         renderer->render();
     }
 

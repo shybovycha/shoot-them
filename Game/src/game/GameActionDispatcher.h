@@ -1,15 +1,13 @@
 #pragma once
 
-#include "../core/ActionDispatcher.h"
+#include "../core/StateManager.h"
 
 #include "GameState.h"
 #include "Level.h"
 
-class GameActionDispatcher : public ActionDispatcher
+class GameActionDispatcher
 {
 public:
-    GameActionDispatcher(const std::shared_ptr<GameState> &gameState);
-
     void shoot(SceneNode* objectAtCursor);
 
     void reload();
@@ -35,7 +33,4 @@ public:
     void gameOver();
 
     void quit();
-
-protected:
-    std::shared_ptr<GameState> getState() const;
 };

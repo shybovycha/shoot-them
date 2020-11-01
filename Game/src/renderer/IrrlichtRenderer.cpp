@@ -1,9 +1,6 @@
 #include "IrrlichtRenderer.h"
 
-IrrlichtRenderer::IrrlichtRenderer(std::shared_ptr<GameState> _gameState,
-        std::shared_ptr<ActionDispatcher> _actionDispatcher) :
-        Renderer(_gameState),
-        actionDispatcher(_actionDispatcher)
+IrrlichtRenderer::IrrlichtRenderer() : Renderer(), GameActionHandler(nullptr)
 {
 }
 
@@ -27,8 +24,6 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
     driver = device->getVideoDriver();
     smgr = device->getSceneManager();
     guienv = device->getGUIEnvironment();
-
-    soundEngine = irrklang::createIrrKlangDevice();
 
     device->getFileSystem()->addFileArchive("resources/packs/data.zip");
 
@@ -56,23 +51,7 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
     screenQuad->getMaterial(0).MaterialType = (irr::video::E_MATERIAL_TYPE)drunkShader;
     screenQuad->getMaterial(0).setTexture(0, screenRenderTarget);
 
-    irr::gui::IGUIFont* font = guienv->getFont("calibri.xml");
-    guienv->getSkin()->setFont(font);
-
-    const auto gameOverText = L"Game over";
-    const auto screenSize = driver->getScreenSize();
-    const auto textSize = font->getDimension(gameOverText);
-
-    gameOverLabel = guienv->addStaticText(
-            gameOverText,
-            irr::core::rect<irr::s32>(
-                    (screenSize.Width / 2) - (textSize.Width / 2),
-                    (screenSize.Height / 2) - (textSize.Height / 2),
-                    (screenSize.Width / 2) + (textSize.Width / 2),
-                    (screenSize.Height / 2) + (textSize.Height / 2)
-            ),
-            false
-    );
+    gameGUI = std::dynamic_pointer_cast<GameGUI>(std::make_shared<IrrlichtGameGUI>(device, driver, guienv));
 
     // TODO: move this to scene config too
     smgr->addLightSceneNode(nullptr, irr::core::vector3df(0, 20, 0), irr::video::SColorf(0.5f, 0.5f, 0.5f, 0.5f), 3000,
@@ -96,11 +75,11 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
     player->setParent(camera);
 
     // sorry, no better place for this instantiation than here, since this event receiver **has** to be bound to both camera node and scene manager
-    eventReceiver = std::make_shared<IrrlichtEventReceiver>(gameState, actionDispatcher, smgr, camera);
+    eventReceiver = std::make_shared<IrrlichtEventReceiver>(smgr, camera);
 
     device->setEventReceiver(eventReceiver.get());
 
-    hud = std::make_shared<IrrlichtHUD>(driver, guienv, gameState);
+    hud = std::make_shared<IrrlichtHUD>(driver, guienv);
     hud->init();
 }
 
@@ -111,14 +90,11 @@ void IrrlichtRenderer::render()
         return;
     }
 
+    auto gameState = StateManager<GameState>::getInstance()->getState();
+
     driver->beginScene(true, true, irr::video::SColor(0, 200, 200, 200));
 
-    if (gameState->getCurrentState() == GameStateType::MAIN_MENU)
-    {
-        device->getCursorControl()->setVisible(true);
-        renderMainMenu();
-    }
-    else if (gameState->getCurrentState() == GameStateType::PLAYING)
+    if (gameState->getCurrentState() == GameStateType::PLAYING)
     {
         // update shader' data
         drunkShaderCallback->setTime(timer->getTime() / 1000.f);
@@ -139,67 +115,10 @@ void IrrlichtRenderer::render()
         // lastly, always render HUD on top of everything
         hud->render();
     }
-    else if (gameState->getCurrentState() == GameStateType::END_GAME)
-    {
-        renderEndGameMenu();
-    }
-    else if (gameState->getCurrentState() == GameStateType::END_LEVEL)
-    {
-        renderEndLevelMenu();
-    }
 
-    guienv->drawAll();
+    gameGUI->render();
 
     driver->endScene();
-}
-
-void IrrlichtRenderer::renderMainMenu()
-{
-    if (mainMenuWindow)
-    {
-        return;
-    }
-
-    mainMenuWindow = guienv->addWindow(
-            irr::core::rect<irr::s32>(100, 100, 315, 265),
-            false,
-            L"Main menu"
-    );
-
-    mainMenuWindow->getCloseButton()->remove();
-
-    guienv->addButton(
-            irr::core::rect<irr::s32>(35, 35, 180, 60),
-            mainMenuWindow,
-            NEW_GAME_BUTTON_ID,
-            L"New game"
-    );
-
-    irr::gui::IGUIButton* continueButton = guienv->addButton(
-            irr::core::rect<irr::s32>(35, 70, 180, 95),
-            mainMenuWindow,
-            CONTINUE_BUTTON_ID,
-            L"Back to the game"
-    );
-
-    continueButton->setEnabled(false);
-
-    guienv->addButton(
-            irr::core::rect<irr::s32>(35, 105, 180, 130),
-            mainMenuWindow,
-            QUIT_BUTTON_ID,
-            L"Quit"
-    );
-}
-
-void IrrlichtRenderer::renderEndGameMenu()
-{
-    // nothing to do here, really
-}
-
-void IrrlichtRenderer::renderEndLevelMenu()
-{
-    // TODO: implement
 }
 
 void IrrlichtRenderer::updateTimer()
@@ -208,6 +127,8 @@ void IrrlichtRenderer::updateTimer()
     {
         return;
     }
+
+    auto gameState = StateManager<GameState>::getInstance()->getState();
 
     gameState->getCurrentScore()->tick();
 
@@ -219,7 +140,7 @@ void IrrlichtRenderer::updateTimer()
         }
         else
         {
-            renderEndGameMenu();
+            actionDispatcher->gameOver();
         }
     }
 }
@@ -229,23 +150,11 @@ void IrrlichtRenderer::shutdown()
     timer->stop();
 
     device->closeDevice();
-    // soundEngine->drop();
 }
 
 bool IrrlichtRenderer::isRunning()
 {
     return device->run();
-}
-
-// TODO: implement this endgame screen
-void IrrlichtRenderer::showResult()
-{
-    /*irr::core::stringw title = L"Level complete!";
-
-    int points = gameState->getCurrentScore()->getTargetsEliminated();
-    int targetCnt = gameState->getCurrentLevel()->getTargets().size();
-
-    int shots = gameState->getCurrentScore()->getShots();*/
 }
 
 void IrrlichtRenderer::updateCrosshair()
@@ -266,6 +175,8 @@ void IrrlichtRenderer::updateCrosshair()
 
 void IrrlichtRenderer::updatePostProcessingEffects()
 {
+    auto gameState = StateManager<GameState>::getInstance()->getState();
+
     unsigned long time = gameState->getCurrentScore()->getCurrentTime();
     int levelIdx = gameState->getCurrentLevelIndex();
     double k = sin(time / 100.0f) / (10.0f - levelIdx);
@@ -281,6 +192,8 @@ void IrrlichtRenderer::updatePostProcessingEffects()
 
 void IrrlichtRenderer::loadLevel(std::shared_ptr<Level> levelDescriptor)
 {
+    auto gameState = StateManager<GameState>::getInstance()->getState();
+
     irr::scene::IAnimatedMesh* levelMesh = smgr->getMesh(levelDescriptor->getModelFilename().c_str());
 
     irr::scene::IAnimatedMeshSceneNode* level = smgr->addAnimatedMeshSceneNode(levelMesh);
@@ -363,4 +276,9 @@ void IrrlichtRenderer::unloadLevel(std::shared_ptr<Level> levelDescriptor)
     {
         levelDescriptor->getModel()->remove();
     }
+}
+
+void IrrlichtRenderer::quit()
+{
+    device->closeDevice();
 }

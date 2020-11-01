@@ -5,65 +5,54 @@
 #include <vector>
 
 #include <irrlicht.h>
-#include <irrKlang.h>
 
-#include "../core/ActionDispatcher.h"
 #include "../core/Renderer.h"
 #include "../core/SceneNode.h"
 #include "../core/Settings.h"
+#include "../game/GameActionDispatcher.h"
+#include "../game/GameActionHandler.h"
 #include "../game/GameState.h"
+
 #include "CDrunkShaderCallback.h"
 #include "CScreenQuadSceneNode.h"
 #include "IrrlichtEventReceiver.h"
+#include "IrrlichtGameGUI.h"
 #include "IrrlichtHUD.h"
 #include "IrrlichtSceneNode.h"
 
-class IrrlichtRenderer : public Renderer
+class IrrlichtRenderer : public Renderer, public GameActionHandler
 {
 public:
-    IrrlichtRenderer(std::shared_ptr<GameState> _gameState, std::shared_ptr<ActionDispatcher> _actionDispatcher);
+    IrrlichtRenderer();
 
-    virtual void init(std::shared_ptr<Settings> settings);
+    virtual void init(std::shared_ptr<Settings> settings) override;
 
-    virtual void render();
+    virtual void render() override;
 
-    virtual void shutdown();
+    virtual void shutdown() override;
 
-    virtual bool isRunning();
+    virtual bool isRunning() override;
 
+    virtual void quit() override;
+
+protected:
+    virtual void loadLevel(std::shared_ptr<Level> levelDescriptor) override;
+
+    virtual void unloadLevel(std::shared_ptr<Level> levelDescriptor) override;
+
+private:
     void updateCrosshair();
 
     void updatePostProcessingEffects();
 
-    void renderMainMenu();
-
-    void renderEndGameMenu();
-
-    void renderEndLevelMenu();
-
-protected:
-    // TODO: this is the endgame screen
-    void showResult();
-
-    void loadLevel(std::shared_ptr<Level> levelDescriptor);
-
-    void unloadLevel(std::shared_ptr<Level> levelDescriptor);
-
     void updateTimer();
 
 private:
-    std::shared_ptr<ActionDispatcher> actionDispatcher;
-
     std::shared_ptr<IrrlichtEventReceiver> eventReceiver;
 
     std::shared_ptr<IrrlichtHUD> hud;
 
     irr::ITimer* timer = 0;
-
-    irr::gui::IGUIWindow* msgbox = 0;
-    irr::gui::IGUIListBox* hiscoreTable = 0;
-    irr::gui::IGUIWindow* mainMenuWindow = 0;
-    irr::gui::IGUIStaticText* gameOverLabel = 0;
 
     irr::IrrlichtDevice* device = 0;
     irr::video::IVideoDriver* driver = 0;
@@ -77,8 +66,6 @@ private:
 
     irr::scene::IBillboardSceneNode* bill = 0;
     irr::scene::ITriangleSelector* selector = 0;
-
-    irrklang::ISoundEngine* soundEngine = 0;
 
     irr::video::ITexture* screenRenderTarget = 0;
     CScreenQuadSceneNode* screenQuad = 0;
