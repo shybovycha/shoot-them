@@ -24,7 +24,7 @@ std::unique_ptr<MultiMeshModel> AssimpModelLoader::fromFile(std::string filename
 
     auto model = fromAiNode(scene, scene->mRootNode, materialLookupPaths);
 
-    return std::move(model);
+    return model;
 }
 
 void AssimpModelLoader::processAiNode(const aiScene* scene, aiNode* node, std::vector<std::filesystem::path> materialLookupPaths, std::vector<std::unique_ptr<AbstractMesh>>& meshes)

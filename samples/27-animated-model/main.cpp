@@ -464,7 +464,7 @@ public:
 
         auto model = fromAiNode(scene, scene->mRootNode, materialLookupPaths);
 
-        return std::move(model);
+        return model;
     }
 
 protected:
@@ -728,7 +728,7 @@ public:
 
         auto model = fromAiNode(scene, scene->mRootNode, materialLookupPaths);
 
-        return std::move(model);
+        return model;
     }
 
 protected:

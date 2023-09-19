@@ -104,7 +104,7 @@ public:
 
         fromAiNode(scene, scene->mRootNode, materialLookupPaths, resultScene);
 
-        return std::move(resultScene);
+        return resultScene;
     }
 
 protected:
@@ -150,7 +150,7 @@ protected:
 
         textureImage->flipVertically();
 
-        return std::move(textureImage);
+        return textureImage;
     }
 
     static void fromAiMesh(const aiScene* scene, aiMesh* mesh, std::vector<std::filesystem::path> materialLookupPaths, std::shared_ptr<StaticScene> resultScene)

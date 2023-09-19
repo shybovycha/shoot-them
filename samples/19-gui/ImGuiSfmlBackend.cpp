@@ -35,7 +35,7 @@ void initImGuiCursorMapping(ImGuiIO& io)
     auto createCursor = [](sf::Cursor::Type cursorType) {
         auto cursor = std::make_shared<sf::Cursor>();
         cursor->loadFromSystem(cursorType);
-        return std::move(cursor);
+        return cursor;
     };
 
     backendData->mouseCursors[ImGuiMouseCursor_Arrow] = createCursor(sf::Cursor::Arrow);
