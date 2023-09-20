@@ -65,7 +65,7 @@ void ActionDispatcher::loadNextLevel()
 
 void ActionDispatcher::loadFirstLevel()
 {
-    gameState->enqueue(new LoadFirstLevelAction(gameState->getCurrentLevel()));
+    gameState->enqueue(new LoadFirstLevelAction(gameState->getFirstLevel()));
 }
 
 void ActionDispatcher::firstLevelLoaded()

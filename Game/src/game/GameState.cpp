@@ -20,6 +20,19 @@ const GameStateType GameState::getCurrentState() const
     return currentState;
 }
 
+const std::shared_ptr<Level> GameState::getFirstLevel() const
+{
+    if (levels.size() < 1)
+    {
+        // TODO: replace this with some sort of logger
+        // since Irrlicht only exposes its logger through IrrlichtDevice instance, which i don't really want to mix in in this clas, screw it
+        std::cerr << "No levels loaded" << std::endl;
+        return nullptr;
+    }
+
+    return levels.at(0);
+}
+
 const std::shared_ptr<Level> GameState::getCurrentLevel() const
 {
     if (levels.empty() || currentLevel < 0 || currentLevel >= levels.size())

@@ -20,6 +20,8 @@ public:
 
     const GameStateType getCurrentState() const;
 
+    const std::shared_ptr<Level> getFirstLevel() const;
+
     const std::shared_ptr<Level> getCurrentLevel() const;
 
     const std::shared_ptr<PlayerState> getPlayerState() const;

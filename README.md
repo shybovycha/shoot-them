@@ -59,7 +59,7 @@ This could be done with `vcpkg x-update-baseline`.
 - [ ] replace existing 3D models with the new artwork (TBD)
 - [x] ~~change the default GUI theme~~
 - [x] do not use exceptions (https://google.github.io/styleguide/cppguide.html#Exceptions)
-- [ ] new game in the middle of the game should reset everything
+- [x] new game in the middle of the game should reset everything
 - [x] properly copy resources to the directory with the binary
 - [x] ~~copy the DLLs to the directory with the binary~~
 - [x] replace status text with some sane HUD
