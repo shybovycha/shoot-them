@@ -28,8 +28,6 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
     smgr = device->getSceneManager();
     guienv = device->getGUIEnvironment();
 
-    soundEngine = irrklang::createIrrKlangDevice();
-
     device->getFileSystem()->addFileArchive("resources/packs/data.zip");
 
     bill = smgr->addBillboardSceneNode();
@@ -64,6 +62,25 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
             0);
 
     // driver->setFog(irr::video::SColor(0, 138, 125, 81), irr::video::EFT_FOG_LINEAR, 250, 1000, 0, true);
+
+    // load sound buffers - they all must remain alive as long as sounds are playing
+    std::vector<std::string> sounds {"noammo.wav", "shot.wav", "bell.wav", "reload.wav"};
+
+    for (auto& soundName : sounds)
+    {
+        auto soundFile = std::format("resources/sounds/{}", soundName);
+
+        auto buffer = std::make_shared<sf::SoundBuffer>();
+
+        if (!buffer->loadFromFile(soundFile))
+        {
+            auto msg = std::format("Failed to load sound ;{}'", soundFile);
+            device->getLogger()->log(msg.c_str(), irr::ELL_ERROR);
+            continue;
+        }
+
+        soundBuffers[soundFile] = std::move(buffer);
+    }
 
     // TODO: move this to scene config too as a player initial position
     camera = smgr->addCameraSceneNodeFPS(0, 100, 0, 0);
@@ -130,7 +147,20 @@ void IrrlichtRenderer::processActionQueue()
 
 void IrrlichtRenderer::processAction(PlaySoundAction* action)
 {
-    soundEngine->play2D(action->getSoundFile().c_str(), false);
+    auto& buffer = soundBuffers[action->getSoundFile()];
+
+    if (!buffer)
+    {
+        auto str = std::format("Failed to load sound {}", action->getSoundFile());
+        device->getLogger()->log(str.c_str(), irr::ELL_ERROR);
+        return;
+    }
+
+    auto sound = std::make_shared<sf::Sound>(*buffer);
+
+    sound->play();
+
+    playingSounds.push(std::move(sound));
 }
 
 void IrrlichtRenderer::processAction(LoadFirstLevelAction* action)
@@ -205,7 +235,7 @@ void IrrlichtRenderer::processAction(MainMenuAction* action)
     {
         mainMenuWindow->getElementFromId(CONTINUE_BUTTON_ID)->setEnabled(true);
     }
-    
+
     device->getCursorControl()->setVisible(true);
 }
 

@@ -17,20 +17,19 @@ void main() {
   maxStrength = clamp(sin(time), minStrength, maxStrength) * 2.0;
 
   // Shift UVs
-  uv.x = uv.x + sin(time * 5.0) * maxStrength;
-  uv.y = uv.y + sin(time * 20.0) * maxStrength;
+  vec2 newUV = vec2(uv.x + sin(time * 5.0) * maxStrength, uv.y + sin(time * 20.0) * maxStrength);
 
   float strongComponent = abs(sin(time)) < abs(cos(time)) ? cos(time) * sign(time) : sin(time) * 2.0;
 
-	uv = rotate(sin(time * 2.5) * PI * maxStrength * strongComponent) * uv;
+  newUV = rotate(sin(time * 2.5) * PI * maxStrength * strongComponent) * newUV;
 
   // Transform the fragment
-  vec4 background = texture(tex, uv);
+  vec4 background = texture(tex, newUV);
 
   // Shift each of the fragment's color channels separately; optional
-  // background.r = texture(tex, vec2(uv.x + maxStrength, uv.y + maxStrength)).r;
-  // background.g = texture(tex, vec2(uv.x - maxStrength, uv.y + maxStrength)).g;
-  // background.b = texture(tex, vec2(uv.x - maxStrength, uv.y - maxStrength)).b;
+  // background.r = texture(tex, vec2(newUV.x + maxStrength, newUV.y + maxStrength)).r;
+  // background.g = texture(tex, vec2(newUV.x - maxStrength, newUV.y + maxStrength)).g;
+  // background.b = texture(tex, vec2(newUV.x - maxStrength, newUV.y - maxStrength)).b;
 
   gl_FragColor = background;
 }

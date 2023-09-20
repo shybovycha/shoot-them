@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
-project(game VERSION 1.0.1 LANGUAGES CXX)
+project(game VERSION 1.0.2 LANGUAGES CXX)
 
 set(SOURCES
     "src/main.cpp"
@@ -34,7 +34,6 @@ set(SOURCES
     "src/renderer/CDrunkShaderCallback.h"
     "src/renderer/CDrunkShaderCallback.cpp"
     "src/core/Vector3.h"
-    "src/core/Vector3.cpp"
     "src/core/SceneNode.h"
     "src/core/SceneNode.cpp"
     "src/renderer/IrrlichtSceneNode.h"
@@ -42,22 +41,22 @@ set(SOURCES
 
 set(EXECUTABLE_NAME game)
 
-set(LIBRARIES
-        ${X11_LIBRARIES}
-        ${OPENGL_LIBRARIES}
-        ${ZLIB_LIBRARIES})
+# set(LIBRARIES
+#         ${X11_LIBRARIES}
+#         ${OPENGL_LIBRARIES}
+#         ${ZLIB_LIBRARIES})
 
-if(NOT APPLE)
-    set(LIBRARIES ${LIBRARIES} ${X11_Xxf86vm_LIB})
-endif()
+# if(NOT APPLE)
+#     set(LIBRARIES ${LIBRARIES} ${X11_Xxf86vm_LIB})
+# endif()
 
-if(APPLE)
-    find_library(IOKIT NAMES IOKit)
-    find_library(OpenGL NAMES OpenGL)
-    find_library(COREVIDEO NAMES CoreVideo)
-    find_library(COCOA NAMES Cocoa)
-    set(LIBRARIES ${LIBRARIES} ${IOKIT} ${COREVIDEO} ${COCOA})
-endif()
+# if(APPLE)
+#     find_library(IOKIT NAMES IOKit)
+#     find_library(OpenGL NAMES OpenGL)
+#     find_library(COREVIDEO NAMES CoreVideo)
+#     find_library(COCOA NAMES Cocoa)
+#     set(LIBRARIES ${LIBRARIES} ${IOKIT} ${COREVIDEO} ${COCOA})
+# endif()
 
 if(APPLE)
     file(GLOB RESOURCE_FILES resources)
@@ -72,45 +71,21 @@ else()
 endif()
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS ON
 )
 
-add_dependencies(${EXECUTABLE_NAME} tinyxml2 irrlicht irrklang)
+target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${LIBRARIES} tinyxml2 irrlicht irrklang)
+find_package(SFML COMPONENTS system audio CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-system sfml-audio)
 
-# Copy libraries' DLLs
-add_custom_command(
-    TARGET ${EXECUTABLE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:tinyxml2> $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
-)
+find_package(tinyxml2 CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE tinyxml2::tinyxml2)
 
-if (WIN32)
-    if (EX_PLATFORM EQUAL "64")
-        set(IRRKLANG_BIN_PATH "${irrklang_SOURCE_DIR}/bin/winx64-visualStudio")
-    else()
-        set(IRRKLANG_BIN_PATH "${irrklang_SOURCE_DIR}/bin/win32-visualStudio")
-    endif()
-
-    message("IrrKlang DLLs: ${IRRKLANG_BIN_PATH}/irrKlang.dll ${IRRKLANG_BIN_PATH}/ikpFlac.dll ${IRRKLANG_BIN_PATH}/ikpMP3.dll")
-
-    add_custom_command(
-        TARGET ${EXECUTABLE_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${IRRKLANG_BIN_PATH}/irrKlang.dll $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
-    )
-
-    add_custom_command(
-        TARGET ${EXECUTABLE_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${IRRKLANG_BIN_PATH}/ikpFlac.dll $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
-    )
-
-    add_custom_command(
-        TARGET ${EXECUTABLE_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${IRRKLANG_BIN_PATH}/ikpMP3.dll $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
-    )
-endif()
+find_package(irrlicht CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE Irrlicht)
 
 # Copy resources
 add_custom_command(

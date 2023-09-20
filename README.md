@@ -28,7 +28,12 @@ Game editor now has a proper UI and is generally way more useful, allowing one t
 
 ## Build
 
-Run CMake: `cmake -Bbuild -H. && cmake --build build`
+Run CMake: `cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=$VCPKG_HOME/scripts/buildsystems/vcpkg.cmake && cmake --build build`
+
+## Updating the dependencies
+
+After making changes to the dependencies, make sure to update the `builtin-baseline` in the `vcpkg.json` file so that vcpkg does not install wrong versions of the dependencies.
+This could be done with `vcpkg x-update-baseline`.
 
 ## TODO
 
@@ -51,7 +56,7 @@ Run CMake: `cmake -Bbuild -H. && cmake --build build`
 - [x] ~~two targets on 3rd level are indestructable~~
 - [x] when the time runs out the next level is not loaded
 - [ ] add end level menu
-- [ ] change 3D models to the artwork
+- [ ] replace existing 3D models with the new artwork (TBD)
 - [x] ~~change the default GUI theme~~
 - [x] do not use exceptions (https://google.github.io/styleguide/cppguide.html#Exceptions)
 - [ ] new game in the middle of the game should reset everything

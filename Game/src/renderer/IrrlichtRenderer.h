@@ -1,11 +1,14 @@
 #pragma once
 
+#include <format>
+#include <map>
 #include <memory>
+#include <queue>
 #include <sstream>
 #include <vector>
 
 #include <irrlicht.h>
-#include <irrKlang.h>
+#include <SFML/Audio.hpp>
 
 #include "../core/ActionDispatcher.h"
 #include "../core/Renderer.h"
@@ -76,6 +79,9 @@ private:
     std::shared_ptr<ActionDispatcher> actionDispatcher;
     std::shared_ptr<IrrlichtHUD> hud;
 
+    std::map<std::string, std::shared_ptr<sf::SoundBuffer>> soundBuffers;
+    std::queue<std::shared_ptr<sf::Sound>> playingSounds;
+
     irr::ITimer* timer = 0;
     irr::gui::IGUIWindow* msgbox = 0;
     irr::gui::IGUIListBox* hiscoreTable = 0;
@@ -94,8 +100,6 @@ private:
 
     irr::scene::IBillboardSceneNode* bill = 0;
     irr::scene::ITriangleSelector* selector = 0;
-
-    irrklang::ISoundEngine* soundEngine = 0;
 
     irr::video::ITexture* screenRenderTarget = 0;
     CScreenQuadSceneNode* screenQuad = 0;

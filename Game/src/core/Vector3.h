@@ -7,29 +7,71 @@ template <typename T>
 class Vector3
 {
 public:
-    Vector3();
+    Vector3()
+        : x(ZERO), y(ZERO), z(ZERO)
+    {
+    }
 
-    Vector3(T x, T y, T z);
+    Vector3(T _x, T _y, T _z)
+        : x(_x), y(_y), z(_z)
+    {
+    }
 
-    Vector3(const Vector3<T> &other);
+    Vector3(const Vector3<T>& other)
+        : x(other.getX()), y(other.getY()), z(other.getZ())
+    {
+    }
 
-    T getX() const;
+    T getX() const
+    {
+        return x;
+    }
 
-    T getY() const;
+    T getY() const
+    {
+        return y;
+    }
 
-    T getZ() const;
+    T getZ() const
+    {
+        return z;
+    }
 
-    Vector3<T> operator+(const Vector3<T> &other) const;
+    Vector3<T> operator+(const Vector3<T>& other) const
+    {
+        return Vector3<T>(x + other.getX(), y + other.getY(), z + other.getZ());
+    }
 
-    Vector3<T> operator*(const T value) const;
+    Vector3<T> operator*(const T value) const
+    {
+        return Vector3<T>(x * value, y * value, z * value);
+    }
 
-    Vector3<T> operator/(const T value) const;
+    Vector3<T> operator/(const T value) const
+    {
+        assert(("the value a vector is divided by must not be zero", value != ZERO));
 
-    bool operator==(const Vector3<T> &other) const;
+        return Vector3<T>(x / value, y / value, z / value);
+    }
 
-    T length() const;
+    bool operator==(const Vector3<T>& other) const
+    {
+        return this->x == other.x && this->y == other.y && this->z == other.z;
+    }
 
-    Vector3<T> normalize() const;
+    T length() const
+    {
+        return std::sqrt((x * x) + (y * y) + (z * z));
+    }
+
+    Vector3<T> normalize() const
+    {
+        const auto l = length();
+
+        assert(("the vector being normalized should have non-zero length", l != ZERO));
+
+        return Vector3<T>(x / l, y / l, z / l);
+    }
 
 private:
     T x;
