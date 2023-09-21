@@ -78,8 +78,8 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 
 target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
-find_package(SFML COMPONENTS system audio CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-system sfml-audio)
+find_package(SFML COMPONENTS audio CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-audio)
 
 find_package(tinyxml2 CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE tinyxml2::tinyxml2)
