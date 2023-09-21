@@ -1,36 +1,11 @@
 cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
-project(editor VERSION 1.0.2 LANGUAGES CXX)
+project(editor VERSION 2.0.0 LANGUAGES CXX)
 
 set(EXECUTABLE_NAME editor)
 
 set(SOURCES
-    "src/main.cpp"
-    "src/ApplicationDelegate.h"
-    "src/ApplicationDelegate.cpp"
-    "src/IrrlichtEventReceiver.h"
-    "src/IrrlichtEventReceiver.cpp"
-    "src/Application.h"
-    "src/Application.cpp"
-    "src/Level.h"
-    "src/Level.cpp"
-    "src/GameManagerNodeData.h"
-    "src/GameManagerNodeData.cpp"
-    "src/Target.h"
-    "src/Target.cpp"
-    "src/GameData.h"
-    "src/GameData.cpp"
-    "src/GameManagerTree.h"
-    "src/GameManagerTree.cpp"
-    "src/GUIElementId.h"
-    "src/CameraSceneNodeAnimator.h"
-    "src/CameraSceneNodeAnimator.cpp"
-    "src/Light.h"
-    "src/Light.cpp"
-    "src/LevelEntity.h"
-    "src/LevelEntity.cpp"
-    "src/SaveFileDialog.h"
-    "src/SaveFileDialog.cpp")
+    "src/main.cpp")
 
 # set(LIBRARIES
 #         ${X11_LIBRARIES}
@@ -66,26 +41,32 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 
 target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
-find_package(SFML COMPONENTS audio CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-audio)
+find_package(SFML COMPONENTS system graphics audio CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-system sfml-graphics sfml-audio)
 
-find_package(tinyxml2 CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE tinyxml2::tinyxml2)
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE assimp::assimp)
 
-find_package(irrlicht CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE Irrlicht)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glfw)
 
-# # Copy libraries' DLLs
-# add_custom_command(
-#     TARGET ${EXECUTABLE_NAME} POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:tinyxml2> $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
-# )
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
 
-# TODO: copy DLLs, not LIBs
-# add_custom_command(
-#     TARGET ${EXECUTABLE_NAME} POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:irrlicht> $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
-# )
+find_package(globjects CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE globjects::globjects)
+
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE imgui::imgui)
+
+find_package(imguizmo CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE imguizmo::imguizmo)
+
+find_package(RapidJSON CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE rapidjson)
+
+find_package(OpenGL REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${OPENGL_LIBRARIES})
 
 # Copy resources
 add_custom_command(
