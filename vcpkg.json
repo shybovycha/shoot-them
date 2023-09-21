@@ -26,7 +26,10 @@
     {
       "name": "imgui",
       "version>=": "1.89.9",
-      "features": [ "glfw-binding", "opengl3-binding" ]
+      "features": [
+        "glfw-binding",
+        "opengl3-binding"
+      ]
     },
     {
       "name": "imguizmo",
@@ -37,5 +40,5 @@
       "version>=": "2023-04-27"
     }
   ],
-  "builtin-baseline": "7476f0d4e77d3333fbb249657df8251c28c4faae"
+  "builtin-baseline": "4cfabe769eaceb209ea37267e8c50c43b86a4a7b"
 }

@@ -31,7 +31,7 @@ int main(void)
     std::cout << std::format("Monitor scale: {} x {}\n", scale_x, scale_y);
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640 * scale_x, 480 * scale_y, "Hello World", nullptr, nullptr);
+    window = glfwCreateWindow(1024 * scale_x, 768 * scale_y, "Hello World", nullptr, nullptr);
 
     if (!window)
     {
@@ -79,6 +79,182 @@ int main(void)
         ImGui::NewFrame();
 
         ImGui::ShowDemoWindow(&show_demo_window);
+
+        ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+
+        if (ImGui::BeginTabBar("MainTabBar", tab_bar_flags))
+        {
+            if (ImGui::BeginTabItem("Getting started"))
+            {
+                ImGui::TextWrapped(
+                    "The workflow looks like this:\n"
+                    "1. Import assets (3D models, sounds, images/sprites)\n"
+                    "2. Configure shaders for each asset - these will define how assets are rendered; the default shaders are provided upon import to get you going\n"
+                    "3. Place models on a scene in 3D space\n"
+                    "4. Define signals and their handlers - a signal could be anything - from a key pressed, timer ticking all the way to a collision between two objects on a scene or scene transition\n"
+                    "5. Set up rendering pipeline - the default pipeline does not have any post-processing effects, just straight rendering of an entire scene. On this step you can implement deferred"
+                    "rendering techniques (such as screen-space ambient occlusion, shadow mapping, etc.) and rendering optimizations (like batch rendering geometry)\n"
+                );
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Assets & shaders"))
+            {
+                ImGui::Text("Import and configure assets here, define shaders for each asset");
+
+                // TODO: add open file dialog
+                // TODO: on import, if there are multiple nodes in the asset, show a dialog to choose what to import
+                // TODO: on import, if errors occur (like can not find texture file), show dialog with options to fix them (errors)
+
+                ImGui::Begin("Shaders");
+
+                // TODO: add shaders configuration window with the default shader
+
+                ImGui::End();
+
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Scene"))
+            {
+                ImGui::Text("Place assets in a scene space");
+
+                ImGui::Begin("Assets");
+
+                static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+                static bool align_label_with_current_x_position = false;
+                static bool test_drag_and_drop = false;
+                /*ImGui::CheckboxFlags("ImGuiTreeNodeFlags_OpenOnArrow", &base_flags, ImGuiTreeNodeFlags_OpenOnArrow);
+        ImGui::CheckboxFlags("ImGuiTreeNodeFlags_OpenOnDoubleClick", &base_flags, ImGuiTreeNodeFlags_OpenOnDoubleClick);
+        ImGui::CheckboxFlags("ImGuiTreeNodeFlags_SpanAvailWidth", &base_flags, ImGuiTreeNodeFlags_SpanAvailWidth);
+        ImGui::SameLine();
+        
+        ImGui::CheckboxFlags("ImGuiTreeNodeFlags_SpanFullWidth", &base_flags, ImGuiTreeNodeFlags_SpanFullWidth);
+        ImGui::Checkbox("Align label with current X position", &align_label_with_current_x_position);
+        ImGui::Checkbox("Test tree node as drag source", &test_drag_and_drop);
+        ImGui::Text("Hello!");
+        if (align_label_with_current_x_position)
+            ImGui::Unindent(ImGui::GetTreeNodeToLabelSpacing());*/
+
+                // 'selection_mask' is dumb representation of what may be user-side selection state.
+                //  You may retain selection state inside or outside your objects in whatever format you see fit.
+                // 'node_clicked' is temporary storage of what node we have clicked to process selection at the end
+                /// of the loop. May be a pointer to your own node type, etc.
+                static int selection_mask = (1 << 2);
+                int node_clicked = -1;
+                for (int i = 0; i < 6; i++)
+                {
+                    // Disable the default "open on single-click behavior" + set Selected flag according to our selection.
+                    // To alter selection we use IsItemClicked() && !IsItemToggledOpen(), so clicking on an arrow doesn't alter selection.
+                    ImGuiTreeNodeFlags node_flags = base_flags;
+                    const bool is_selected = (selection_mask & (1 << i)) != 0;
+                    if (is_selected)
+                        node_flags |= ImGuiTreeNodeFlags_Selected;
+                    if (i < 3)
+                    {
+                        // Items 0..2 are Tree Node
+                        bool node_open = ImGui::TreeNodeEx((void*) (intptr_t) i, node_flags, "Selectable Node %d", i);
+                        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                            node_clicked = i;
+                        if (test_drag_and_drop && ImGui::BeginDragDropSource())
+                        {
+                            ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+                            ImGui::Text("This is a drag and drop source");
+                            ImGui::EndDragDropSource();
+                        }
+                        if (node_open)
+                        {
+                            ImGui::BulletText("Blah blah\nBlah Blah");
+                            ImGui::TreePop();
+                        }
+                    }
+                    else
+                    {
+                        // Items 3..5 are Tree Leaves
+                        // The only reason we use TreeNode at all is to allow selection of the leaf. Otherwise we can
+                        // use BulletText() or advance the cursor by GetTreeNodeToLabelSpacing() and call Text().
+                        node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;// ImGuiTreeNodeFlags_Bullet
+                        ImGui::TreeNodeEx((void*) (intptr_t) i, node_flags, "Selectable Leaf %d", i);
+                        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                            node_clicked = i;
+                        if (test_drag_and_drop && ImGui::BeginDragDropSource())
+                        {
+                            ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+                            ImGui::Text("This is a drag and drop source");
+                            ImGui::EndDragDropSource();
+                        }
+                    }
+                }
+
+                if (node_clicked != -1)
+                {
+                    // Update selection state
+                    // (process outside of tree loop to avoid visual inconsistencies during the clicking frame)
+                    if (ImGui::GetIO().KeyCtrl)
+                        selection_mask ^= (1 << node_clicked);// CTRL+click to toggle
+                    else                                      //if (!(selection_mask & (1 << node_clicked))) // Depending on selection behavior you want, may want to preserve selection when clicking on item that is part of the selection
+                        selection_mask = (1 << node_clicked); // Click to single-select
+                }
+
+                if (align_label_with_current_x_position)
+                    ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
+
+                ImGui::End();
+
+                ImGui::Begin("Scene node properties");
+
+                static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+
+                if (ImGui::BeginTable("table1", 3, flags))
+                {
+                    // Display headers so we can inspect their interaction with borders.
+                    // (Headers are not the main purpose of this section of the demo, so we are not elaborating on them too much. See other sections for details)
+                    if (true)
+                    {
+                        ImGui::TableSetupColumn("One");
+                        ImGui::TableSetupColumn("Two");
+                        ImGui::TableSetupColumn("Three");
+                        ImGui::TableHeadersRow();
+                    }
+
+                    for (int row = 0; row < 5; row++)
+                    {
+                        ImGui::TableNextRow();
+                        for (int column = 0; column < 3; column++)
+                        {
+                            ImGui::TableSetColumnIndex(column);
+                            char buf[32];
+                            sprintf(buf, "Hello %d,%d", column, row);
+                            if (row % 2 == 0)
+                                ImGui::TextUnformatted(buf);
+                            else
+                                ImGui::Button(buf, ImVec2(-FLT_MIN, 0.0f));
+                        }
+                    }
+                    ImGui::EndTable();
+                }
+
+                ImGui::End();
+
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Logic"))
+            {
+                ImGui::Text("Write logic code here");
+                ImGui::EndTabItem();
+            }
+
+            if (ImGui::BeginTabItem("Rendering pipeline"))
+            {
+                ImGui::Text("Define scene-wise rendering pipeline (forward or deferred rendering, batch multi-draw optimizations, shadow mapping, etc.)");
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
+
+        
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
