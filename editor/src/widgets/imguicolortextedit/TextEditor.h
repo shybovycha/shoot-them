@@ -36,6 +36,7 @@ public:
         CurrentLineFill,
         CurrentLineFillInactive,
         CurrentLineEdge,
+        Error,
         Max
     };
 

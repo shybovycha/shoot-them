@@ -922,11 +922,11 @@ void TextEditor::Render()
                 if (ImGui::IsMouseHoveringRect(lineStartScreenPos, end))
                 {
                     ImGui::BeginTooltip();
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Text, mPalette[(int) PaletteIndex::Error]);//ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
                     ImGui::Text("Error at line %d:", errorIt->first);
                     ImGui::PopStyleColor();
                     ImGui::Separator();
-                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.2f, 1.0f));
+                    ImGui::PushStyleColor(ImGuiCol_Text, mPalette[(int) PaletteIndex::Error]); //ImVec4(1.0f, 1.0f, 0.2f, 1.0f));
                     ImGui::Text("%s", errorIt->second.c_str());
                     ImGui::PopStyleColor();
                     ImGui::EndTooltip();
@@ -2029,6 +2029,7 @@ const TextEditor::Palette& TextEditor::GetLightPalette()
             0x40000000,// Current line fill
             0x40808080,// Current line fill (inactive)
             0x40000000,// Current line edge
+            0xa00000ff,// Error
     }};
     return p;
 }
@@ -2057,6 +2058,7 @@ const TextEditor::Palette& TextEditor::GetRetroBluePalette()
             0x40000000,// Current line fill
             0x40808080,// Current line fill (inactive)
             0x40000000,// Current line edge
+            0xa00000ff,// Error
     }};
     return p;
 }
@@ -3012,21 +3014,213 @@ const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::GLSL()
     if (!inited)
     {
         static const char* const keywords[] = {
-                "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long", "register", "restrict", "return", "short",
-                "signed", "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while", "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
-                "_Noreturn", "_Static_assert", "_Thread_local"};
+                "bool", "int", "uint", "float", "double", "void",
+                "vec2", "vec3", "vec4",
+                "mat2", "mat3", "mat4",
+                "bvec2", "bvec3", "bvec4",
+                "ivec2", "ivec3", "ivec4",
+                "uvec2", "uvec3", "uvec4",
+                "dvec2", "dvec3", "dvec4",
+                "mat2x2", "mat3x3", "mat4x4",
+                "sampler",
+                "sampler1D", "isampler1D", "usampler1D"
+                "sampler2D", "isampler2D", "usampler2D"
+                "sampler3D", "isampler3D", "usampler3D"
+                "samplerCube", "isamplerCube", "usamplerCube"
+                "sampler2DRect", "isampler2DRect", "usampler2DRect"
+                "sampler1DArray", "isampler1DArray", "usampler1DArray"
+                "sampler2DArray", "isampler2DArray", "usampler2DArray"
+                "samplerCubeArray", "isamplerCubeArray", "usamplerCubeArray"
+                "samplerBuffer", "isamplerBuffer", "usamplerBuffer"
+                "sampler2DMS", "isampler2DMS", "usampler2DMS"
+                "sampler2DMSArray", "isampler2DMSArray", "usampler2DMSArray"
+                "sampler1DShadow",
+                "sampler2DShadow",
+                "samplerCubeShadow",
+                "samplerCubeShadow",
+                "sampler1DArrayShadow",
+                "sampler2DArrayShadow",
+                "samplerCubeArrayShadow",
+                "image1D", "iimage1D", "uimage1D"
+                "image2D", "iimage2D", "uimage2D"
+                "image3D", "iimage3D", "uimage3D"
+                "imageCube", "iimageCube", "uimageCube"
+                "image2DRect", "iimage2DRect", "uimage2DRect"
+                "image1DArray", "iimage1DArray", "uimage1DArray"
+                "image2DArray", "iimage2DArray", "uimage2DArray"
+                "imageCubeArray", "iimageCubeArray", "uimageCubeArray"
+                "imageBuffer", "iimageBuffer", "uimageBuffer"
+                "image2DMS", "iimage2DMS", "uimage2DMS"
+                "image2DMSArray", "iimage2DMSArray", "uimage2DMSArray"
+                "uniform", "layout", "in", "out", "inout", "const",
+                "flat", "coherent", "volatile", "restrict", "readonly", "writeonly",
+                "buffer", "struct",
+                "if", "else", "for", "while", "do", "switch", "case", "break", "continue", "return", "discard",
+        };
+
         for (auto& k : keywords)
             langDef.mKeywords.insert(k);
 
-        static const char* const identifiers[] = {
-                "abort", "abs", "acos", "asin", "atan", "atexit", "atof", "atoi", "atol", "ceil", "clock", "cosh", "ctime", "div", "exit", "fabs", "floor", "fmod", "getchar", "getenv", "isalnum", "isalpha", "isdigit", "isgraph",
-                "ispunct", "isspace", "isupper", "kbhit", "log10", "log2", "log", "memcmp", "modf", "pow", "putchar", "putenv", "puts", "rand", "remove", "rename", "sinh", "sqrt", "srand", "strcat", "strcmp", "strerror", "time", "tolower", "toupper"};
-        for (auto& k : identifiers)
+        static const std::map<std::string_view, std::string_view> const identifiers = {
+                {"gl_PrimitiveID", "int gl_PrimitiveID"},
+                {"gl_Position", "vec4 gl_Position"},
+                {"gl_PointSize", "float gl_PointSize"},
+                {"gl_ClipDistance", "float gl_ClipDistance"},
+
+                {"gl_PrimitiveIDIn", "int gl_PrimitiveIDIn"},
+                {"gl_InvocationID", "int gl_InvocationID"},
+
+                {"gl_FragCoord", "vec4 gl_FragCoord"},
+                {"gl_FrontFacing", "bool gl_FrontFacing"},
+                {"gl_PointCoord", "vec2 gl_PointCoord"},
+                {"gl_SampleID", "int gl_SampleID"},
+                {"gl_SamplePosition", "vec2 gl_SamplePosition"},
+                {"gl_SampleMaskIn", "int gl_SampleMaskIn[]"},
+
+                {"gl_SampleMaskIn", "float gl_FragDepth"},
+
+                {"gl_VertexID", "int gl_VertexID"},
+                {"gl_InstanceID", "int gl_InstanceID"},
+                {"gl_DrawID", "int gl_DrawID"},
+                {"gl_BaseVertex", "int gl_BaseVertex"},
+                {"gl_BaseInstance", "int gl_BaseInstance"},
+
+                {"abs", "genType abs(genType x)"},
+                {"acos", "genType acos(genType x)"},
+                {"acosh", "genType acosh(genType x)"},
+                {"all", "bool all(bvec x)"},
+                {"any", "bool any(bvec x)"},
+                {"asin", "genType asin(genType x)"},
+                {"asinh", "genType asinh(genType x)"},
+                {"atan", "genType atan(genType x)"},
+                {"atanh", "genType atanh(genType x)"},
+                {"ceil", "genType ceil(genType x)"},
+                {"clamp", "genType clamp(genType x, genType minValue, genType maxValue)"},
+                {"cos", "genType cos(genType x)"},
+                {"cosh", "genType cosh(genType x)"},
+                {"cross", "vec3 cross(vec3 x, vec3 y)"},
+                {"degrees", "genType degrees(genType radians)"},
+                {"determinant", "float determinant(mat2 x)\nfloat determinant(mat3 x)\nfloat determinant(mat4 x)\ndouble determinant(dmat2 x)\ndouble determinant(dmat3 x)\ndouble determinant(dmat4 x)"},
+                {"dFdx", "genType dFdx(genType x) - return the partial derivative of an argument with respect to x"},
+                {"dFdxCoarse", "genType dFdxCoarse(genType x)"},
+                {"dFdxFine", "genType dFdxFine(genType x)"},
+                {"dFdy", "genType dFdy(genType x) - return the partial derivative of an argument with respect to y"},
+                {"dFdyCoarse", "genType dFdyCoarse(genType x)"},
+                {"dFdyFine", "genType dFdyFine(genType x)"},
+                {"distance", "float distance(genType x, genType y) - calculate the distance between two points"},
+                {"dot", "float dot(genType x, genType y) - calculate the dot product of two vectors"},
+                {"equal", "bvec equal(vec x, vec y)"},
+                {"exp", "genType exp(genType x)"},
+                {"exp2", "genType exp2(genType x)"},
+                {"findLSB", "genIType findLSB(genIType x) - find the index of the least significant bit set to 1 in an integer"},
+                {"findMSB", "genIType findMSB(genIType x) - find the index of the most significant bit set to 1 in an integer"},
+                {"floor", "floor()"},
+                {"fma", "fma(x, y, z) - perform a fused multiply-add operation"},
+                {"fract", "fract(float x) - compute the fractional part of the argument"},
+                {"frexp", "frexp(float x, out int y) - split a floating point number"},
+                {"fwidth", "fwidth(p) - return the sum of the absolute value of derivatives in x and y"},
+                {"fwidthCoarse", "fwidthCoarse()"},
+                {"fwidthFine", "fwidthFine()"},
+                {"greaterThan", "greaterThan()"},
+                {"greaterThanEqual", "greaterThanEqual()"},
+                {"imulExtended", "imulExtended()"},
+                {"intBitsToFloat", "intBitsToFloat()"},
+                {"interpolateAtCentroid", "interpolateAtCentroid()"},
+                {"interpolateAtOffset", "interpolateAtOffset()"},
+                {"interpolateAtSample", "interpolateAtSample()"},
+                {"imageLoad", "imageLoad()"},
+                {"imageSamples", "imageSamples()"},
+                {"imageSize", "imageSize()"},
+                {"imageStore", "imageStore()"},
+                {"inverse", "inverse()"},
+                {"inversesqrt", "inversesqrt()"},
+                {"isinf", "isinf()"},
+                {"isnan", "isnan()"},
+                {"ldexp", "ldexp()"},
+                {"length", "length()"},
+                {"lessThan", "lessThan()"},
+                {"lessThanEqual", "lessThanEqual()"},
+                {"log", "log()"},
+                {"log2", "log2()"},
+                {"matrixCompMult", "matrixCompMult()"},
+                {"max", "max()"},
+                {"min", "min()"},
+                {"mix", "mix()"},
+                {"mod", "mod()"},
+                {"modf", "modf()"},
+                {"noise", "noise()"},
+                {"noise1", "noise1()"},
+                {"noise2", "noise2()"},
+                {"noise3", "noise3()"},
+                {"noise4", "noise4()"},
+                {"normalize", "normalize()"},
+                {"not", "not()"},
+                {"notEqual", "notEqual()"},
+                {"outerProduct", "outerProduct()"},
+                {"pow", "pow()"},
+                {"radians", "radians()"},
+                {"reflect", "reflect()"},
+                {"refract", "refract()"},
+                {"removedTypes", "removedTypes()"},
+                {"round", "round()"},
+                {"roundEven", "roundEven()"},
+                {"sign", "sign()"},
+                {"sin", "sin()"},
+                {"sinh", "sinh()"},
+                {"smoothstep", "smoothstep()"},
+                {"sqrt", "sqrt()"},
+                {"step", "step()"},
+                {"tan", "tan()"},
+                {"tanh", "tanh()"},
+                {"texelFetch", "texelFetch()"},
+                {"texelFetchOffset", "texelFetchOffset()"},
+                {"texture", "texture()"},
+                {"textureGather", "textureGather()"},
+                {"textureGatherOffset", "textureGatherOffset()"},
+                {"textureGatherOffsets", "textureGatherOffsets()"},
+                {"textureGrad", "textureGrad()"},
+                {"textureGradOffset", "textureGradOffset()"},
+                {"textureLod", "textureLod()"},
+                {"textureLodOffset", "textureLodOffset()"},
+                {"textureOffset", "textureOffset()"},
+                {"textureProj", "textureProj()"},
+                {"textureProjGrad", "textureProjGrad()"},
+                {"textureProjGradOffset", "textureProjGradOffset()"},
+                {"textureProjLod", "textureProjLod()"},
+                {"textureProjLodOffset", "textureProjLodOffset()"},
+                {"textureProjOffset", "textureProjOffset()"},
+                {"textureQueryLevels", "textureQueryLevels()"},
+                {"textureQueryLod", "textureQueryLod()"},
+                {"textureSamples", "textureSamples()"},
+                {"textureSize", "textureSize()"},
+                {"transpose", "transpose()"},
+                {"trunc", "trunc()"},
+                {"unpackDouble2x32", "unpackDouble2x32()"},
+                {"unpackHalf2x16", "unpackHalf2x16()"},
+                {"unpackSnorm2x16", "unpackSnorm2x16()"},
+                {"unpackSnorm4x8", "unpackSnorm4x8()"},
+                {"unpackUnorm", "unpackUnorm()"},
+                {"unpackUnorm2x16", "unpackUnorm2x16()"},
+                {"unpackUnorm4x8", "unpackUnorm4x8()"},
+                {"usubBorrow", "usubBorrow()"},
+
+                //"abort", "abs", "acos", "asin", "atan", "atexit", "atof", "atoi", "atol", "ceil", "clock", "cosh", "ctime", "div", "exit", "fabs", "floor", "fmod", "getchar", "getenv", "isalnum", "isalpha", "isdigit", "isgraph",
+                //"ispunct", "isspace", "isupper", "kbhit", "layout", "log10", "log2", "log", "memcmp", "modf", "pow", "putchar", "putenv", "puts", "rand", "remove", "rename", "sinh", "sqrt", "srand", "strcat", "strcmp", "strerror", "time", "tolower", "toupper"
+        };
+
+        for (auto& kv : identifiers)
+        {
+            Identifier id;
+            id.mDeclaration = kv.second;
+            langDef.mIdentifiers.insert(std::make_pair(kv.first, id));
+        }
+
+        /*for (auto& k : identifiers)
         {
             Identifier id;
             id.mDeclaration = "Built-in function";
             langDef.mIdentifiers.insert(std::make_pair(std::string(k), id));
-        }
+        }*/
 
         langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \\t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
         langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("L?\\\"(\\\\.|[^\\\"])*\\\"", PaletteIndex::String));

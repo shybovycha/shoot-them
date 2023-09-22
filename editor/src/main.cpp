@@ -11,6 +11,7 @@
 #include <imgui_impl_glfw.h>
 
 #include "widgets/imfiledialog/ImFileDialog.h"
+#include "widgets/imguicolortextedit/TextEditor.h"
 
 int main(void)
 {
@@ -288,6 +289,103 @@ int main(void)
             if (ImGui::BeginTabItem("Logic"))
             {
                 ImGui::Text("Write logic code here");
+
+                static TextEditor editor;
+                static bool text_editor_initialized = false;
+
+                if (!text_editor_initialized)
+                {
+                    ImVec4 wndBg = ImGui::GetStyleColorVec4(ImGuiCol_WindowBg);
+
+                    // light theme - load default icons
+                    if ((wndBg.x + wndBg.y + wndBg.z) / 3.0f > 0.5f)
+                    {
+                        editor.SetPalette(TextEditor::GetLightPalette());
+                    }
+                    else
+                    {
+                        editor.SetPalette(TextEditor::GetDarkPalette());
+                    }
+
+                    auto lang = TextEditor::LanguageDefinition::GLSL();
+
+                    /*
+                // set your own known preprocessor symbols...
+    static const char* ppnames[] = { "NULL", "PM_REMOVE",
+        "ZeroMemory", "DXGI_SWAP_EFFECT_DISCARD", "D3D_FEATURE_LEVEL", "D3D_DRIVER_TYPE_HARDWARE", "WINAPI","D3D11_SDK_VERSION", "assert" };
+    // ... and their corresponding values
+    static const char* ppvalues[] = {
+        "#define NULL ((void*)0)",
+        "#define PM_REMOVE (0x0001)",
+        "Microsoft's own memory zapper function\n(which is a macro actually)\nvoid ZeroMemory(\n\t[in] PVOID  Destination,\n\t[in] SIZE_T Length\n); ",
+        "enum DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD = 0",
+        "enum D3D_FEATURE_LEVEL",
+        "enum D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE  = ( D3D_DRIVER_TYPE_UNKNOWN + 1 )",
+        "#define WINAPI __stdcall",
+        "#define D3D11_SDK_VERSION (7)",
+        " #define assert(expression) (void)(                                                  \n"
+        "    (!!(expression)) ||                                                              \n"
+        "    (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \n"
+        " )"
+        };
+
+    for (int i = 0; i < sizeof(ppnames) / sizeof(ppnames[0]); ++i)
+    {
+        TextEditor::Identifier id;
+        id.mDeclaration = ppvalues[i];
+        lang.mPreprocIdentifiers.insert(std::make_pair(std::string(ppnames[i]), id));
+    }
+    */
+
+                    // set your own identifiers
+                    static const char* identifiers[] = {
+                            "gl_FragDepth"};
+
+                    static const char* idecls[] =
+                            {
+                                    "float gl_FragDepth"};
+
+                    for (int i = 0; i < sizeof(identifiers) / sizeof(identifiers[0]); ++i)
+                    {
+                        TextEditor::Identifier id;
+                        id.mDeclaration = std::string(idecls[i]);
+                        lang.mIdentifiers.insert(std::make_pair(std::string(identifiers[i]), id));
+                    }
+
+                    editor.SetLanguageDefinition(lang);
+
+                    // error markers
+                    TextEditor::ErrorMarkers markers;
+                    markers.insert(std::make_pair<int, std::string>(6, "Example error here:\nInclude file not found: \"TextEditor.h\""));
+                    markers.insert(std::make_pair<int, std::string>(41, "Another example error"));
+                    editor.SetErrorMarkers(markers);
+
+                    editor.SetText("#version 430\n\n\
+in vec4 fragmentPosition;\n\n\
+struct PointLight\n\
+{\n\
+                        vec3 lightPosition;\n\
+                        float farPlane;\n\
+                        mat4 projectionViewMatrices[6];\n\
+};\n\
+\n\
+layout (std430, binding = 5) buffer pointLightData\n\
+{\n\
+                        PointLight pointLight;\n\
+};\n\
+\n\
+void main()\n\
+{\n\
+                        float distance = length(fragmentPosition.xyz - pointLight.lightPosition) / pointLight.farPlane;\n\
+\n\
+                        gl_FragDepth = distance;\n\
+}");
+
+                    text_editor_initialized = true;
+                }
+
+                editor.Render("TextEditor");
+
                 ImGui::EndTabItem();
             }
 
@@ -299,8 +397,6 @@ int main(void)
 
             ImGui::EndTabBar();
         }
-
-
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
