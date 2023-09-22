@@ -1,10 +1,16 @@
 #include <iostream>
 #include <format>
 
+#define GLFW_INCLUDE_GLEXT
 #include <GLFW/glfw3.h>
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
+
+#include "widgets/imfiledialog/ImFileDialog.h"
 
 int main(void)
 {
@@ -67,6 +73,27 @@ int main(void)
 
     bool show_demo_window = true;
 
+    ifd::FileDialog::Instance().CreateTexture = [](uint8_t* data, int w, int h, char fmt) -> void* {
+        GLuint tex;
+
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, (fmt == 0) ? GL_BGRA : GL_RGBA, GL_UNSIGNED_BYTE, data);
+        // glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return (void*) tex;
+    };
+
+    ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
+        GLuint texID = (GLuint) tex;
+        glDeleteTextures(1, &texID);
+    };
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -95,6 +122,7 @@ int main(void)
                     "5. Set up rendering pipeline - the default pipeline does not have any post-processing effects, just straight rendering of an entire scene. On this step you can implement deferred"
                     "rendering techniques (such as screen-space ambient occlusion, shadow mapping, etc.) and rendering optimizations (like batch rendering geometry)\n"
                 );
+
                 ImGui::EndTabItem();
             }
 
@@ -102,7 +130,25 @@ int main(void)
             {
                 ImGui::Text("Import and configure assets here, define shaders for each asset");
 
-                // TODO: add open file dialog
+                if (ImGui::Button("Import"))
+                {
+                    ifd::FileDialog::Instance().Open("open_assets", "Import assets", "*.*");
+                }
+
+                if (ifd::FileDialog::Instance().IsDone("open_assets"))
+                {
+                    if (ifd::FileDialog::Instance().HasResult())
+                    {
+                        std::cout << "Opened file: '" << ifd::FileDialog::Instance().GetResult() << "'\n";
+                    }
+                    else
+                    {
+                        std::cout << "No file opened\n";
+                    }
+
+                    ifd::FileDialog::Instance().Close();
+                }
+
                 // TODO: on import, if there are multiple nodes in the asset, show a dialog to choose what to import
                 // TODO: on import, if errors occur (like can not find texture file), show dialog with options to fix them (errors)
 
@@ -128,7 +174,7 @@ int main(void)
         ImGui::CheckboxFlags("ImGuiTreeNodeFlags_OpenOnDoubleClick", &base_flags, ImGuiTreeNodeFlags_OpenOnDoubleClick);
         ImGui::CheckboxFlags("ImGuiTreeNodeFlags_SpanAvailWidth", &base_flags, ImGuiTreeNodeFlags_SpanAvailWidth);
         ImGui::SameLine();
-        
+
         ImGui::CheckboxFlags("ImGuiTreeNodeFlags_SpanFullWidth", &base_flags, ImGuiTreeNodeFlags_SpanFullWidth);
         ImGui::Checkbox("Align label with current X position", &align_label_with_current_x_position);
         ImGui::Checkbox("Test tree node as drag source", &test_drag_and_drop);
@@ -254,7 +300,7 @@ int main(void)
             ImGui::EndTabBar();
         }
 
-        
+
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);

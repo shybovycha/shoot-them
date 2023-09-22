@@ -5,7 +5,29 @@ project(editor VERSION 2.0.0 LANGUAGES CXX)
 set(EXECUTABLE_NAME editor)
 
 set(SOURCES
-    "src/main.cpp")
+    "src/main.cpp"
+    "src/widgets/imfiledialog/ImFileDialog.h"
+    "src/widgets/imfiledialog/ImFileDialog.cpp"
+    "src/widgets/imguicolortextedit/TextEditor.h"
+    "src/widgets/imguicolortextedit/TextEditor.cpp"
+    "src/widgets/imguicurveeditor/ImGuiCurveEditor.cpp"
+    "src/widgets/imguinodeeditor/crude_json.cpp"
+    "src/widgets/imguinodeeditor/crude_json.h"
+    "src/widgets/imguinodeeditor/imgui_bezier_math.h"
+    "src/widgets/imguinodeeditor/imgui_bezier_math.inl"
+    "src/widgets/imguinodeeditor/imgui_canvas.cpp"
+    "src/widgets/imguinodeeditor/imgui_canvas.h"
+    "src/widgets/imguinodeeditor/imgui_extra_math.h"
+    "src/widgets/imguinodeeditor/imgui_extra_math.inl"
+    "src/widgets/imguinodeeditor/imgui_node_editor.cpp"
+    "src/widgets/imguinodeeditor/imgui_node_editor.h"
+    "src/widgets/imguinodeeditor/imgui_node_editor_api.cpp"
+    "src/widgets/imguinodeeditor/imgui_node_editor_internal.h"
+    "src/widgets/imguinodeeditor/imgui_node_editor_internal.inl"
+    "src/widgets/imnodes/imnodes.cpp"
+    "src/widgets/imnodes/imnodes.h"
+    "src/widgets/imnodes/imnodes_internal.h"
+)
 
 # set(LIBRARIES
 #         ${X11_LIBRARIES}
