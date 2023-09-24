@@ -13,6 +13,14 @@
 #include "widgets/imfiledialog/ImFileDialog.h"
 #include "widgets/imguicolortextedit/TextEditor.h"
 
+// #include "widgets/imguinodeeditor/imgui_node_editor.h"
+#include "widgets/imnodes/imnodes.h"
+
+struct NodeLink {
+    int id;
+    int start_attr, end_attr;
+};
+
 int main(void)
 {
     GLFWwindow* window;
@@ -96,6 +104,12 @@ int main(void)
     };
 
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
+
+    //ax::NodeEditor::Config config;
+    //// config.SettingsFile = "Simple.json";
+    //ax::NodeEditor::EditorContext* m_Context = ax::NodeEditor::CreateEditor(&config);
+
+    ImNodes::CreateContext();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -405,6 +419,113 @@ void main()\n\
             if (ImGui::BeginTabItem("Rendering pipeline"))
             {
                 ImGui::Text("Define scene-wise rendering pipeline (forward or deferred rendering, batch multi-draw optimizations, shadow mapping, etc.)");
+
+                
+                ImNodes::BeginNodeEditor();
+
+                ImNodes::BeginNode(2);
+
+                ImNodes::BeginNodeTitleBar();
+                ImGui::TextUnformatted("node 1");
+                ImNodes::EndNodeTitleBar();
+
+                ImNodes::BeginInputAttribute(2 << 8);
+                ImGui::TextUnformatted("input");
+                ImNodes::EndInputAttribute();
+
+                ImNodes::BeginStaticAttribute(2 << 16);
+                ImGui::PushItemWidth(120.0f);
+                static float c1 = 1;
+                ImGui::DragFloat("value", &c1, 0.01f);
+                ImGui::PopItemWidth();
+                ImNodes::EndStaticAttribute();
+
+                ImNodes::BeginOutputAttribute(2 << 24);
+                const float text_width1 = ImGui::CalcTextSize("output").x;
+                ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width1);
+                ImGui::TextUnformatted("output");
+                ImNodes::EndOutputAttribute();
+
+                ImNodes::EndNode();
+
+                ImNodes::BeginNode(3);
+
+                ImNodes::BeginNodeTitleBar();
+                ImGui::TextUnformatted("node 2");
+                ImNodes::EndNodeTitleBar();
+
+                ImNodes::BeginInputAttribute(3 << 8);
+                ImGui::TextUnformatted("input");
+                ImNodes::EndInputAttribute();
+
+                ImNodes::BeginStaticAttribute(3 << 16);
+                ImGui::PushItemWidth(120.0f);
+                static float c2 = 1;
+                ImGui::DragFloat("value", &c2, 0.01f);
+                ImGui::PopItemWidth();
+                ImNodes::EndStaticAttribute();
+
+                ImNodes::BeginOutputAttribute(3 << 24);
+                const float text_width2 = ImGui::CalcTextSize("output").x;
+                ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width2);
+                ImGui::TextUnformatted("output");
+                ImNodes::EndOutputAttribute();
+
+                ImNodes::EndNode();
+
+                static std::vector<NodeLink> links;
+
+                if (links.empty())
+                    links.push_back(NodeLink {.id = 1, .start_attr = 2 << 24, .end_attr = 3 << 8});
+
+                for (const auto& link : links)
+                {
+                    ImNodes::Link(link.id, link.start_attr, link.end_attr);
+                }
+
+                ImNodes::EndNodeEditor();
+
+                static int current_id = 0;
+
+                {
+                    static NodeLink link;
+                    if (ImNodes::IsLinkCreated(&link.start_attr, &link.end_attr))
+                    {
+                        link.id = ++current_id;
+                        links.push_back(link);
+                    }
+                }
+
+                {
+                    int link_id;
+                    if (ImNodes::IsLinkDestroyed(&link_id))
+                    {
+                        auto iter = std::find_if(
+                                links.begin(), links.end(), [link_id](const NodeLink& link) -> bool {
+                                    return link.id == link_id;
+                                });
+                        // assert(iter != editor.links.end());
+                        links.erase(iter);
+                    }
+                }
+
+                //ax::NodeEditor::SetCurrentEditor(m_Context);
+                //ax::NodeEditor::Begin("My Editor", ImVec2(0.0, 0.0f));
+                //int uniqueId = 1;
+                //// Start drawing nodes.
+                //ax::NodeEditor::BeginNode(uniqueId++);
+                //ImGui::Text("Node A");
+                //ax::NodeEditor::BeginPin(uniqueId++, ax::NodeEditor::PinKind::Input);
+                //ImGui::Text("-> In");
+                //ax::NodeEditor::EndPin();
+                //ImGui::SameLine();
+                //ax::NodeEditor::BeginPin(uniqueId++, ax::NodeEditor::PinKind::Output);
+                //ImGui::Text("Out ->");
+                //ax::NodeEditor::EndPin();
+                //ax::NodeEditor::EndNode();
+                //ax::NodeEditor::End();
+                //ax::NodeEditor::SetCurrentEditor(nullptr);
+
                 ImGui::EndTabItem();
             }
 
@@ -427,6 +548,10 @@ void main()\n\
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
     }
+    
+    // ax::NodeEditor::DestroyEditor(m_Context);
+
+    ImNodes::DestroyContext();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
