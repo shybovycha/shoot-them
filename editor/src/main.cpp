@@ -95,6 +95,8 @@ int main(void)
         glDeleteTextures(1, &texID);
     };
 
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse;
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
@@ -108,6 +110,7 @@ int main(void)
 
         ImGui::ShowDemoWindow(&show_demo_window);
 
+        ImGui::Begin("Tools", nullptr, window_flags);
         ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 
         if (ImGui::BeginTabBar("MainTabBar", tab_bar_flags))
@@ -166,7 +169,7 @@ int main(void)
             {
                 ImGui::Text("Place assets in a scene space");
 
-                ImGui::Begin("Assets");
+                ImGui::Begin("Scene structure");
 
                 static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
                 static bool align_label_with_current_x_position = false;
@@ -189,6 +192,7 @@ int main(void)
                 /// of the loop. May be a pointer to your own node type, etc.
                 static int selection_mask = (1 << 2);
                 int node_clicked = -1;
+                static int node_selected = -1;
                 for (int i = 0; i < 6; i++)
                 {
                     // Disable the default "open on single-click behavior" + set Selected flag according to our selection.
@@ -202,7 +206,10 @@ int main(void)
                         // Items 0..2 are Tree Node
                         bool node_open = ImGui::TreeNodeEx((void*) (intptr_t) i, node_flags, "Selectable Node %d", i);
                         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                        {
                             node_clicked = i;
+                            node_selected = (node_selected == i ? -1 : i);
+                        }
                         if (test_drag_and_drop && ImGui::BeginDragDropSource())
                         {
                             ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
@@ -223,7 +230,10 @@ int main(void)
                         node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;// ImGuiTreeNodeFlags_Bullet
                         ImGui::TreeNodeEx((void*) (intptr_t) i, node_flags, "Selectable Leaf %d", i);
                         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
+                        {
                             node_clicked = i;
+                            node_selected = (node_selected == i ? -1 : i);
+                        }
                         if (test_drag_and_drop && ImGui::BeginDragDropSource())
                         {
                             ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
@@ -246,39 +256,42 @@ int main(void)
                 if (align_label_with_current_x_position)
                     ImGui::Indent(ImGui::GetTreeNodeToLabelSpacing());
 
-                ImGui::End();
-
-                ImGui::Begin("Scene node properties");
-
-                static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
-
-                if (ImGui::BeginTable("table1", 3, flags))
+                if (node_selected != -1)
                 {
-                    // Display headers so we can inspect their interaction with borders.
-                    // (Headers are not the main purpose of this section of the demo, so we are not elaborating on them too much. See other sections for details)
-                    if (true)
-                    {
-                        ImGui::TableSetupColumn("One");
-                        ImGui::TableSetupColumn("Two");
-                        ImGui::TableSetupColumn("Three");
-                        ImGui::TableHeadersRow();
-                    }
+                    ImGui::SeparatorText(std::format("Properties (node {})", node_selected).c_str());
 
-                    for (int row = 0; row < 5; row++)
+                    static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+
+                    if (ImGui::BeginTable("table1", 2, flags))
                     {
-                        ImGui::TableNextRow();
-                        for (int column = 0; column < 3; column++)
+                        // Display headers so we can inspect their interaction with borders.
+                        // (Headers are not the main purpose of this section of the demo, so we are not elaborating on them too much. See other sections for details)
+                        if (true)
                         {
-                            ImGui::TableSetColumnIndex(column);
+                            ImGui::TableSetupColumn("Property");
+                            ImGui::TableSetupColumn("Value");
+                            ImGui::TableHeadersRow();
+                        }
+
+                        for (int row = 0; row < 5; row++)
+                        {
+                            ImGui::TableNextRow();
+
+                            ImGui::TableSetColumnIndex(0);
                             char buf[32];
-                            sprintf(buf, "Hello %d,%d", column, row);
+                            sprintf(buf, "Hello %d,%d", 0, row);
+                            ImGui::TextUnformatted(buf);
+
+                            ImGui::TableSetColumnIndex(1);
+                            float vec3f[3];
                             if (row % 2 == 0)
-                                ImGui::TextUnformatted(buf);
+                                ImGui::InputFloat3("##label", vec3f);
                             else
                                 ImGui::Button(buf, ImVec2(-FLT_MIN, 0.0f));
                         }
+                        ImGui::EndTable();
                     }
-                    ImGui::EndTable();
+
                 }
 
                 ImGui::End();
@@ -397,6 +410,8 @@ void main()\n\
 
             ImGui::EndTabBar();
         }
+
+        ImGui::End();
 
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
