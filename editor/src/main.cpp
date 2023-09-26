@@ -416,6 +416,91 @@ void main()\n\
                 ImGui::EndTabItem();
             }
 
+            if (ImGui::BeginTabItem("States"))
+
+            {
+                ImGui::Text("Define states and transitions for a scene");
+
+                ImNodes::BeginNodeEditor();
+
+                for (auto i = 0; i < 5; ++i)
+                {
+                    auto node_id = i + 1;
+
+                    ImNodes::BeginNode(node_id);
+
+                    ImNodes::BeginNodeTitleBar();
+                    ImGui::TextUnformatted(std::format("state", node_id).c_str());
+                    ImNodes::EndNodeTitleBar();
+
+                    ImNodes::BeginInputAttribute(node_id << 8);
+                    ImGui::TextUnformatted("Trigger");
+                    ImNodes::EndInputAttribute();
+
+                    ImNodes::BeginOutputAttribute(node_id << 16);
+                    ImGui::PushItemWidth(120.0f);
+                    char* signal_name = new char[255];
+                    ImGui::InputText("Signal", signal_name, 255);
+                    ImGui::PopItemWidth();
+                    ImNodes::EndOutputAttribute();
+
+                    ImNodes::BeginStaticAttribute(node_id << 24);
+                    ImGui::PushItemWidth(120.0f);
+                    ImGui::Button("Add signal");
+                    ImGui::PopItemWidth();
+                    ImNodes::EndStaticAttribute();
+
+                    ImNodes::EndNode();
+                }
+
+                static std::vector<NodeLink> state_transitions;
+
+                if (state_transitions.empty())
+                {
+                    state_transitions.push_back(NodeLink {.id = 1, .start_attr = 1 << 16, .end_attr = 3 << 8});
+                    state_transitions.push_back(NodeLink {.id = 2, .start_attr = 2 << 16, .end_attr = 3 << 8});
+                    state_transitions.push_back(NodeLink {.id = 3, .start_attr = 3 << 16, .end_attr = 4 << 8});
+                    state_transitions.push_back(NodeLink {.id = 4, .start_attr = 3 << 16, .end_attr = 5 << 8});
+                }
+
+                for (const auto& state_transition : state_transitions)
+                {
+                    ImNodes::Link(state_transition.id, state_transition.start_attr, state_transition.end_attr);
+                }
+
+                ImNodes::EndNodeEditor();
+
+                static int current_id = 0;
+
+                {
+                    static NodeLink transition;
+                    if (ImNodes::IsLinkCreated(&transition.start_attr, &transition.end_attr))
+                    {
+                        transition.id = ++current_id;
+                        state_transitions.push_back(transition);
+                    }
+                }
+
+                {
+                    int link_id;
+
+                    if (ImNodes::IsLinkDestroyed(&link_id))
+                    {
+                        auto iter = std::find_if(
+                                state_transitions.begin(), state_transitions.end(), [link_id](const NodeLink& transition) -> bool {
+                                    return transition.id == link_id;
+                                });
+
+                        if (iter != state_transitions.end())
+                        {
+                            state_transitions.erase(iter);
+                        }
+                    }
+                }
+
+                ImGui::EndTabItem();
+            }
+
             if (ImGui::BeginTabItem("Rendering pipeline"))
             {
                 ImGui::Text("Define scene-wise rendering pipeline (forward or deferred rendering, batch multi-draw optimizations, shadow mapping, etc.)");
