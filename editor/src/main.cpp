@@ -498,6 +498,47 @@ void main()\n\
                     }
                 }
 
+                {
+                    static int prev_start_attribute = -1;
+                    int start_attribute = -1;
+
+                    if (prev_start_attribute != -1)
+                    {
+                        ImGui::OpenPopup("add state");
+                    }
+
+                    if (ImNodes::IsLinkDropped(&start_attribute) && prev_start_attribute == -1)
+                    {
+                        prev_start_attribute = start_attribute;
+                    }
+
+                    if (ImGui::BeginPopup("add state"))
+                    {
+                        const ImVec2 click_pos = ImGui::GetMousePosOnOpeningCurrentPopup();
+
+                        if (ImGui::MenuItem("state"))
+                        {
+                            prev_start_attribute = -1;
+                            // const Node value(NodeType::value, 0.f);
+                            // const Node op(NodeType::add);
+
+                            /*UiNode ui_node;
+                                ui_node.type = UiNodeType::add;
+                                ui_node.ui.add.lhs = graph_.insert_node(value);
+                                ui_node.ui.add.rhs = graph_.insert_node(value);
+                                ui_node.id = graph_.insert_node(op);
+
+                                graph_.insert_edge(ui_node.id, ui_node.ui.add.lhs);
+                                graph_.insert_edge(ui_node.id, ui_node.ui.add.rhs);
+
+                                nodes_.push_back(ui_node);
+                                ImNodes::SetNodeScreenSpacePos(ui_node.id, click_pos);*/
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                }
+
                 ImGui::EndTabItem();
             }
 
