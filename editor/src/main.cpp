@@ -420,63 +420,59 @@ void main()\n\
             {
                 ImGui::Text("Define scene-wise rendering pipeline (forward or deferred rendering, batch multi-draw optimizations, shadow mapping, etc.)");
 
-                
                 ImNodes::BeginNodeEditor();
 
-                ImNodes::BeginNode(2);
+                for (auto i = 0; i < 5; ++i)
+                {
+                    auto node_id = i + 1;
 
-                ImNodes::BeginNodeTitleBar();
-                ImGui::TextUnformatted("node 1");
-                ImNodes::EndNodeTitleBar();
+                    ImNodes::BeginNode(node_id);
 
-                ImNodes::BeginInputAttribute(2 << 8);
-                ImGui::TextUnformatted("input");
-                ImNodes::EndInputAttribute();
+                    ImNodes::BeginNodeTitleBar();
+                    ImGui::TextUnformatted(std::format("node {}", node_id).c_str());
+                    ImNodes::EndNodeTitleBar();
 
-                ImNodes::BeginStaticAttribute(2 << 16);
-                ImGui::PushItemWidth(120.0f);
-                static float c1 = 1;
-                ImGui::DragFloat("value", &c1, 0.01f);
-                ImGui::PopItemWidth();
-                ImNodes::EndStaticAttribute();
+                    ImNodes::BeginInputAttribute(node_id << 8);
+                    ImGui::TextUnformatted("input");
+                    ImNodes::EndInputAttribute();
 
-                ImNodes::BeginOutputAttribute(2 << 24);
-                const float text_width1 = ImGui::CalcTextSize("output").x;
-                ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width1);
-                ImGui::TextUnformatted("output");
-                ImNodes::EndOutputAttribute();
+                    ImNodes::BeginStaticAttribute(node_id << 16);
+                    ImGui::PushItemWidth(120.0f);
+                    static float c1 = 1;
+                    ImGui::DragFloat("value", &c1, 0.01f);
+                    ImGui::PopItemWidth();
+                    ImNodes::EndStaticAttribute();
 
-                ImNodes::EndNode();
+                    ImNodes::BeginOutputAttribute(node_id << 24);
+                    /*const float text_width1 = ImGui::CalcTextSize("output").x;
+                    ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width1);
+                    ImGui::TextUnformatted("output");*/
+                    ImGui::PushItemWidth(120.0f);
+                    static float c2 = -3.14f * i;
+                    ImGui::DragFloat("value2", &c2, 0.01f);
+                    ImGui::PopItemWidth();
+                    ImNodes::EndOutputAttribute();
 
-                ImNodes::BeginNode(3);
-
-                ImNodes::BeginNodeTitleBar();
-                ImGui::TextUnformatted("node 2");
-                ImNodes::EndNodeTitleBar();
-
-                ImNodes::BeginInputAttribute(3 << 8);
-                ImGui::TextUnformatted("input");
-                ImNodes::EndInputAttribute();
-
-                ImNodes::BeginStaticAttribute(3 << 16);
-                ImGui::PushItemWidth(120.0f);
-                static float c2 = 1;
-                ImGui::DragFloat("value", &c2, 0.01f);
-                ImGui::PopItemWidth();
-                ImNodes::EndStaticAttribute();
-
-                ImNodes::BeginOutputAttribute(3 << 24);
-                const float text_width2 = ImGui::CalcTextSize("output").x;
-                ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width2);
-                ImGui::TextUnformatted("output");
-                ImNodes::EndOutputAttribute();
-
-                ImNodes::EndNode();
+                    ImNodes::EndNode();
+                }
 
                 static std::vector<NodeLink> links;
 
+                /*
+                * Create the following diagram (temporary):
+                *
+                * node 1 \        / node 4
+                *          node 3
+                * node 2 /        \ node 5
+                */
+
                 if (links.empty())
-                    links.push_back(NodeLink {.id = 1, .start_attr = 2 << 24, .end_attr = 3 << 8});
+                {
+                    links.push_back(NodeLink {.id = 1, .start_attr = 1 << 24, .end_attr = 3 << 8});
+                    links.push_back(NodeLink {.id = 2, .start_attr = 2 << 24, .end_attr = 3 << 8});
+                    links.push_back(NodeLink {.id = 3, .start_attr = 3 << 24, .end_attr = 4 << 8});
+                    links.push_back(NodeLink {.id = 4, .start_attr = 3 << 24, .end_attr = 5 << 8});
+                }
 
                 for (const auto& link : links)
                 {
@@ -548,7 +544,7 @@ void main()\n\
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
     }
-    
+
     // ax::NodeEditor::DestroyEditor(m_Context);
 
     ImNodes::DestroyContext();
