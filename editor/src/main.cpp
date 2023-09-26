@@ -64,7 +64,11 @@ int main(void)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
 
-    io.FontGlobalScale = scale_y;
+    auto font = io.Fonts->AddFontFromFileTTF("resources/fonts/NotoSans-Light.ttf", 28);
+
+    io.Fonts->Build();
+
+    // io.FontGlobalScale = scale_y;
 
     auto style = &ImGui::GetStyle();
     style->ScaleAllSizes(scale_y);
@@ -121,6 +125,8 @@ int main(void)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        io.FontDefault = font;
 
         ImGui::ShowDemoWindow(&show_demo_window);
 
