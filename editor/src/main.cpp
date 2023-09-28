@@ -16,12 +16,85 @@
 // #include "widgets/imguinodeeditor/imgui_node_editor.h"
 #include "widgets/imnodes/imnodes.h"
 
+#include "rapidjson/document.h"
+#include "rapidjson/schema.h"
+
 struct NodeLink {
     int id;
     int start_attr, end_attr;
 };
 
-int main(void)
+int main()
+{
+    const auto testJson = R"(
+    {
+        "hello": "world",
+        "t": true,
+        "f": false,
+        "n": null,
+        "a":[1, 2, 3, 4, 5],
+        "long-string": "long\nlooooooong\nmaaaan~!\n"
+    }
+    )";
+
+    const auto schemaJson = R"(
+    {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties":
+        {
+            "hello":
+            {
+                "type": "string"
+            },
+            "a":
+            {
+                "type": "array",
+                "items":
+                {
+                   "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 3
+            }
+        }
+    }
+    )";
+
+    rapidjson::Document schemaDoc1;
+    schemaDoc1.Parse(schemaJson);
+
+    rapidjson::SchemaDocument schemaDoc(schemaDoc1);
+    rapidjson::SchemaValidator jsonValidator(schemaDoc);
+
+    rapidjson::Document doc;
+    doc.Parse(testJson);
+
+    if (!doc.Accept(jsonValidator))
+    {
+        rapidjson::StringBuffer sb;
+
+        jsonValidator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
+
+        std::cerr << std::format("Invalid schema: {}\n", sb.GetString());
+
+        sb.Clear();
+
+        jsonValidator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
+
+        std::cerr << std::format("Invalid document: {}\n", sb.GetString());
+    }
+
+    std::cout << std::format("Original JSON:\n {}\n", testJson);
+
+    auto s = doc["long-string"].GetString();
+
+    std::cout << std::format("long string: '{}'\n", s);
+
+    return 0;
+}
+
+int main1(void)
 {
     GLFWwindow* window;
 

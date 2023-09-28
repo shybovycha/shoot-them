@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "vec2": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 2,
+      "maxItems": 2
+    },
+
+    "vec3": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3
+    },
+
+    "vec4": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 4,
+      "maxItems": 4
+    },
+
+    "vec": {
+      "oneOf": [
+        { "$ref": "#/$defs/vec2" },
+        { "$ref": "#/$defs/vec3" },
+        { "$ref": "#/$defs/vec4" }
+      ]
+    },
+
+    "filePath": {
+      "type": "string",
+      "minLength": 1
+    },
+
+    "resource/image": {
+      "type": "object",
+      "properties": {
+        "path": { "$ref": "#/$defs/filePath" }
+      }
+    },
+
+    "resource/mesh": {
+      "type": "object",
+      "properties": {
+        "path": { "$ref": "#/$defs/filePath" }
+      }
+    },
+
+    "resource": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "oneOf": [ "image", "mesh", "shader" ]
+        }
+      }
+    },
+
+    "meshPlacement": {
+      "type": "object",
+      "properties": {
+        "mesh": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": { "$ref": "#/$defs/vec3" }
+      }
+    },
+
+    "scene": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/resource" }
+        },
+
+        "meshPlacement": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/meshPlacement" }
+        }
+      }
+    }
+  },
+
+  "$ref": "#/$defs/scene"
+}
