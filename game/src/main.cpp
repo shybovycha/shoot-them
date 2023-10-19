@@ -308,12 +308,12 @@ private:
 class ResourceManager
 {
 public:
-    void add3DModel()
+    void add3DModel(const std::string& name, const std::string& path)
     {
         // TODO
     }
 
-    void addTexture()
+    void addTexture(const std::string& name, const std::string& path)
     {
         // TODO
     }
@@ -446,58 +446,68 @@ int main()
         //.endNamespace();
 
     // define renderer singleton
-    luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("scene")
-            .beginClass<Renderer>("Renderer")
-            .addFunction("use_shader_program", &Renderer::useShaderProgram)
-            .addFunction("use_framebuffer", &Renderer::useFramebuffer)
-            .addFunction("set_uniform",
-                         luabridge::overload<const std::string&, Vector2>(&Renderer::setUniform),
-                         luabridge::overload<const std::string&, Vector3>(&Renderer::setUniform),
-                         luabridge::overload<const std::string&, Matrix3>(&Renderer::setUniform),
-                         luabridge::overload<const std::string&, Matrix4>(&Renderer::setUniform))
-            .addFunction("set_texture", &Renderer::setTexture)
-            .addFunction("draw_3d_model", &Renderer::draw3DModel)
-            .endClass();
+    //luabridge::getGlobalNamespace(luaState)
+    //        //.beginNamespace("scene")
+    //        .beginClass<Renderer>("Renderer")
+    //        .addFunction("use_shader_program", &Renderer::useShaderProgram)
+    //        .addFunction("use_framebuffer", &Renderer::useFramebuffer)
+    //        .addFunction("set_uniform",
+    //                     luabridge::overload<const std::string&, Vector2>(&Renderer::setUniform),
+    //                     luabridge::overload<const std::string&, Vector3>(&Renderer::setUniform),
+    //                     luabridge::overload<const std::string&, Matrix3>(&Renderer::setUniform),
+    //                     luabridge::overload<const std::string&, Matrix4>(&Renderer::setUniform))
+    //        .addFunction("set_texture", &Renderer::setTexture)
+    //        .addFunction("draw_3d_model", &Renderer::draw3DModel)
+    //        .endClass();
         //.endNamespace();
 
     auto renderer = std::make_unique<Renderer>();
 
     luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("scene")
-            .addProperty("renderer", renderer.get(), false)
+        .beginNamespace("renderer")
+            .addFunction("use_shader_program", [&](const std::string& name) { renderer->useShaderProgram(name); })
+            .addFunction("use_framebuffer", [&](const std::string& name) { renderer->useFramebuffer(name); })
+            .addFunction("set_uniform",
+                         [&](const std::string& name, Vector2 value) { renderer->setUniform(name, value); },
+                         [&](const std::string& name, Vector3 value) { renderer->setUniform(name, value); },
+                         [&](const std::string& name, Matrix3 value) { renderer->setUniform(name, value); },
+                         [&](const std::string& name, Matrix4 value) { renderer->setUniform(name, value); })
+            .addFunction("set_texture", [&](const std::string& name, const std::string& resource) { renderer->setTexture(name, resource); })
+            .addFunction("draw_3d_model", [&](const std::string& name, Matrix4 value) { renderer->draw3DModel(name); })
         .endNamespace();
 
     // define resource manager singleton
-    luabridge::getGlobalNamespace(luaState)
-            // .beginNamespace("scene")
-            .beginClass<ResourceManager>("ResourceManager")
-            .addFunction("add_3d_model", &ResourceManager::add3DModel)
-            .addFunction("add_texture", &ResourceManager::addTexture)
-            .endClass();
-        //.endNamespace();
+    //luabridge::getGlobalNamespace(luaState)
+    //        // .beginNamespace("scene")
+    //        .beginClass<ResourceManager>("ResourceManager")
+    //        .addFunction("add_3d_model", &ResourceManager::add3DModel)
+    //        .addFunction("add_texture", &ResourceManager::addTexture)
+    //        .endClass();
+    //    //.endNamespace();
 
     auto resources = std::make_unique<ResourceManager>();
 
     luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("scene")
-            .addProperty("resources", resources.get(), false)
+        .beginNamespace("resources")
+            .addFunction("add_3d_model", [&](const std::string& name, const std::string& path) { resources->add3DModel(name, path); })
+            .addFunction("add_texture", [&](const std::string& name, const std::string& path) { resources->addTexture(name, path); })
         .endNamespace();
 
     // define input manager singleton
-    luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("scene")
-            .beginClass<InputManager>("InputManager")
-            .addProperty("mouse_position", &InputManager::getMousePosition)
-            .addFunction("is_mouse_button_pressed", &InputManager::isMouseButtonPressed)
-            .endClass();
+    //luabridge::getGlobalNamespace(luaState)
+    //        //.beginNamespace("scene")
+    //        .beginClass<InputManager>("InputManager")
+    //        .addProperty("mouse_position", &InputManager::getMousePosition)
+    //        .addFunction("is_mouse_button_pressed", &InputManager::isMouseButtonPressed)
+    //        .endClass();
         //.endNamespace();
 
     auto inputs = std::make_unique<InputManager>();
 
     luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("scene")
-            .addProperty("inputs", inputs.get(), false)
+        .beginNamespace("inputs")
+            .addProperty("mouse_position", [&]() { return inputs->getMousePosition(); })
+            .addFunction("is_mouse_button_pressed", [&](int b) { return inputs->isMouseButtonPressed(b); })
         .endNamespace();
 
     // define global constants: MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT
@@ -505,7 +515,7 @@ int main()
     auto MOUSE_BUTTON_RIGHT = 2;
 
     luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("scene")
+        .beginNamespace("inputs")
             .addProperty("MOUSE_BUTTON_LEFT", &MOUSE_BUTTON_LEFT)
             .addProperty("MOUSE_BUTTON_RIGHT", &MOUSE_BUTTON_RIGHT)
         .endNamespace();
