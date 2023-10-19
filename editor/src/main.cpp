@@ -16,12 +16,85 @@
 // #include "widgets/imguinodeeditor/imgui_node_editor.h"
 #include "widgets/imnodes/imnodes.h"
 
+#include "rapidjson/document.h"
+#include "rapidjson/schema.h"
+
 struct NodeLink {
     int id;
     int start_attr, end_attr;
 };
 
-int main(void)
+int main()
+{
+    const auto testJson = R"(
+    {
+        "hello": "world",
+        "t": true,
+        "f": false,
+        "n": null,
+        "a":[1, 2, 3, 4, 5],
+        "long-string": "long\nlooooooong\nmaaaan~!\n"
+    }
+    )";
+
+    const auto schemaJson = R"(
+    {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties":
+        {
+            "hello":
+            {
+                "type": "string"
+            },
+            "a":
+            {
+                "type": "array",
+                "items":
+                {
+                   "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 3
+            }
+        }
+    }
+    )";
+
+    rapidjson::Document schemaDoc1;
+    schemaDoc1.Parse(schemaJson);
+
+    rapidjson::SchemaDocument schemaDoc(schemaDoc1);
+    rapidjson::SchemaValidator jsonValidator(schemaDoc);
+
+    rapidjson::Document doc;
+    doc.Parse(testJson);
+
+    if (!doc.Accept(jsonValidator))
+    {
+        rapidjson::StringBuffer sb;
+
+        jsonValidator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
+
+        std::cerr << std::format("Invalid schema: {}\n", sb.GetString());
+
+        sb.Clear();
+
+        jsonValidator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
+
+        std::cerr << std::format("Invalid document: {}\n", sb.GetString());
+    }
+
+    std::cout << std::format("Original JSON:\n {}\n", testJson);
+
+    auto s = doc["long-string"].GetString();
+
+    std::cout << std::format("long string: '{}'\n", s);
+
+    return 0;
+}
+
+int main1(void)
 {
     GLFWwindow* window;
 
@@ -64,7 +137,11 @@ int main(void)
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
 
-    io.FontGlobalScale = scale_y;
+    auto font = io.Fonts->AddFontFromFileTTF("resources/fonts/NotoSans-Light.ttf", 28);
+
+    io.Fonts->Build();
+
+    // io.FontGlobalScale = scale_y;
 
     auto style = &ImGui::GetStyle();
     style->ScaleAllSizes(scale_y);
@@ -121,6 +198,8 @@ int main(void)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        io.FontDefault = font;
 
         ImGui::ShowDemoWindow(&show_demo_window);
 
@@ -416,67 +495,189 @@ void main()\n\
                 ImGui::EndTabItem();
             }
 
+            if (ImGui::BeginTabItem("States"))
+
+            {
+                ImGui::Text("Define states and transitions for a scene");
+
+                ImNodes::BeginNodeEditor();
+
+                for (auto i = 0; i < 5; ++i)
+                {
+                    auto node_id = i + 1;
+
+                    ImNodes::BeginNode(node_id);
+
+                    ImNodes::BeginNodeTitleBar();
+                    ImGui::TextUnformatted(std::format("state", node_id).c_str());
+                    ImNodes::EndNodeTitleBar();
+
+                    ImNodes::BeginInputAttribute(node_id << 8);
+                    ImGui::TextUnformatted("Trigger");
+                    ImNodes::EndInputAttribute();
+
+                    ImNodes::BeginOutputAttribute(node_id << 16);
+                    ImGui::PushItemWidth(120.0f);
+                    char* signal_name = new char[255];
+                    ImGui::InputText("Signal", signal_name, 255);
+                    ImGui::PopItemWidth();
+                    ImNodes::EndOutputAttribute();
+
+                    ImNodes::BeginStaticAttribute(node_id << 24);
+                    ImGui::PushItemWidth(120.0f);
+                    ImGui::Button("Add signal");
+                    ImGui::PopItemWidth();
+                    ImNodes::EndStaticAttribute();
+
+                    ImNodes::EndNode();
+                }
+
+                static std::vector<NodeLink> state_transitions;
+
+                if (state_transitions.empty())
+                {
+                    state_transitions.push_back(NodeLink {.id = 1, .start_attr = 1 << 16, .end_attr = 3 << 8});
+                    state_transitions.push_back(NodeLink {.id = 2, .start_attr = 2 << 16, .end_attr = 3 << 8});
+                    state_transitions.push_back(NodeLink {.id = 3, .start_attr = 3 << 16, .end_attr = 4 << 8});
+                    state_transitions.push_back(NodeLink {.id = 4, .start_attr = 3 << 16, .end_attr = 5 << 8});
+                }
+
+                for (const auto& state_transition : state_transitions)
+                {
+                    ImNodes::Link(state_transition.id, state_transition.start_attr, state_transition.end_attr);
+                }
+
+                ImNodes::EndNodeEditor();
+
+                static int current_id = 0;
+
+                {
+                    static NodeLink transition;
+                    if (ImNodes::IsLinkCreated(&transition.start_attr, &transition.end_attr))
+                    {
+                        transition.id = ++current_id;
+                        state_transitions.push_back(transition);
+                    }
+                }
+
+                {
+                    int link_id;
+
+                    if (ImNodes::IsLinkDestroyed(&link_id))
+                    {
+                        auto iter = std::find_if(
+                                state_transitions.begin(), state_transitions.end(), [link_id](const NodeLink& transition) -> bool {
+                                    return transition.id == link_id;
+                                });
+
+                        if (iter != state_transitions.end())
+                        {
+                            state_transitions.erase(iter);
+                        }
+                    }
+                }
+
+                {
+                    static int prev_start_attribute = -1;
+                    int start_attribute = -1;
+
+                    if (prev_start_attribute != -1)
+                    {
+                        ImGui::OpenPopup("add state");
+                    }
+
+                    if (ImNodes::IsLinkDropped(&start_attribute) && prev_start_attribute == -1)
+                    {
+                        prev_start_attribute = start_attribute;
+                    }
+
+                    if (ImGui::BeginPopup("add state"))
+                    {
+                        const ImVec2 click_pos = ImGui::GetMousePosOnOpeningCurrentPopup();
+
+                        if (ImGui::MenuItem("state"))
+                        {
+                            prev_start_attribute = -1;
+                            // const Node value(NodeType::value, 0.f);
+                            // const Node op(NodeType::add);
+
+                            /*UiNode ui_node;
+                                ui_node.type = UiNodeType::add;
+                                ui_node.ui.add.lhs = graph_.insert_node(value);
+                                ui_node.ui.add.rhs = graph_.insert_node(value);
+                                ui_node.id = graph_.insert_node(op);
+
+                                graph_.insert_edge(ui_node.id, ui_node.ui.add.lhs);
+                                graph_.insert_edge(ui_node.id, ui_node.ui.add.rhs);
+
+                                nodes_.push_back(ui_node);
+                                ImNodes::SetNodeScreenSpacePos(ui_node.id, click_pos);*/
+                        }
+
+                        ImGui::EndPopup();
+                    }
+                }
+
+                ImGui::EndTabItem();
+            }
+
             if (ImGui::BeginTabItem("Rendering pipeline"))
             {
                 ImGui::Text("Define scene-wise rendering pipeline (forward or deferred rendering, batch multi-draw optimizations, shadow mapping, etc.)");
 
-                
                 ImNodes::BeginNodeEditor();
 
-                ImNodes::BeginNode(2);
+                for (auto i = 0; i < 5; ++i)
+                {
+                    auto node_id = i + 1;
 
-                ImNodes::BeginNodeTitleBar();
-                ImGui::TextUnformatted("node 1");
-                ImNodes::EndNodeTitleBar();
+                    ImNodes::BeginNode(node_id);
 
-                ImNodes::BeginInputAttribute(2 << 8);
-                ImGui::TextUnformatted("input");
-                ImNodes::EndInputAttribute();
+                    ImNodes::BeginNodeTitleBar();
+                    ImGui::TextUnformatted(std::format("node {}", node_id).c_str());
+                    ImNodes::EndNodeTitleBar();
 
-                ImNodes::BeginStaticAttribute(2 << 16);
-                ImGui::PushItemWidth(120.0f);
-                static float c1 = 1;
-                ImGui::DragFloat("value", &c1, 0.01f);
-                ImGui::PopItemWidth();
-                ImNodes::EndStaticAttribute();
+                    ImNodes::BeginInputAttribute(node_id << 8);
+                    ImGui::TextUnformatted("input");
+                    ImNodes::EndInputAttribute();
 
-                ImNodes::BeginOutputAttribute(2 << 24);
-                const float text_width1 = ImGui::CalcTextSize("output").x;
-                ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width1);
-                ImGui::TextUnformatted("output");
-                ImNodes::EndOutputAttribute();
+                    ImNodes::BeginStaticAttribute(node_id << 16);
+                    ImGui::PushItemWidth(120.0f);
+                    static float c1 = 1;
+                    ImGui::DragFloat("value", &c1, 0.01f);
+                    ImGui::PopItemWidth();
+                    ImNodes::EndStaticAttribute();
 
-                ImNodes::EndNode();
+                    ImNodes::BeginOutputAttribute(node_id << 24);
+                    /*const float text_width1 = ImGui::CalcTextSize("output").x;
+                    ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width1);
+                    ImGui::TextUnformatted("output");*/
+                    ImGui::PushItemWidth(120.0f);
+                    static float c2 = -3.14f * i;
+                    ImGui::DragFloat("value2", &c2, 0.01f);
+                    ImGui::PopItemWidth();
+                    ImNodes::EndOutputAttribute();
 
-                ImNodes::BeginNode(3);
-
-                ImNodes::BeginNodeTitleBar();
-                ImGui::TextUnformatted("node 2");
-                ImNodes::EndNodeTitleBar();
-
-                ImNodes::BeginInputAttribute(3 << 8);
-                ImGui::TextUnformatted("input");
-                ImNodes::EndInputAttribute();
-
-                ImNodes::BeginStaticAttribute(3 << 16);
-                ImGui::PushItemWidth(120.0f);
-                static float c2 = 1;
-                ImGui::DragFloat("value", &c2, 0.01f);
-                ImGui::PopItemWidth();
-                ImNodes::EndStaticAttribute();
-
-                ImNodes::BeginOutputAttribute(3 << 24);
-                const float text_width2 = ImGui::CalcTextSize("output").x;
-                ImGui::Indent(120.f + ImGui::CalcTextSize("value").x - text_width2);
-                ImGui::TextUnformatted("output");
-                ImNodes::EndOutputAttribute();
-
-                ImNodes::EndNode();
+                    ImNodes::EndNode();
+                }
 
                 static std::vector<NodeLink> links;
 
+                /*
+                * Create the following diagram (temporary):
+                *
+                * node 1 \        / node 4
+                *          node 3
+                * node 2 /        \ node 5
+                */
+
                 if (links.empty())
-                    links.push_back(NodeLink {.id = 1, .start_attr = 2 << 24, .end_attr = 3 << 8});
+                {
+                    links.push_back(NodeLink {.id = 1, .start_attr = 1 << 24, .end_attr = 3 << 8});
+                    links.push_back(NodeLink {.id = 2, .start_attr = 2 << 24, .end_attr = 3 << 8});
+                    links.push_back(NodeLink {.id = 3, .start_attr = 3 << 24, .end_attr = 4 << 8});
+                    links.push_back(NodeLink {.id = 4, .start_attr = 3 << 24, .end_attr = 5 << 8});
+                }
 
                 for (const auto& link : links)
                 {
@@ -548,7 +749,7 @@ void main()\n\
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
     }
-    
+
     // ax::NodeEditor::DestroyEditor(m_Context);
 
     ImNodes::DestroyContext();
