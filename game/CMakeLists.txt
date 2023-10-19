@@ -4,7 +4,16 @@ project(game VERSION 1.0.2 LANGUAGES CXX)
 
 set(SOURCES
     "src/main.cpp"
-)
+    "src/math/Vector2.h"
+    "src/math/Vector3.h"
+    "src/math/Vector4.h"
+    "src/math/Matrix3.h"
+    "src/math/Matrix4.h"
+    "src/rendering/Camera.h"
+    "src/rendering/ResourceManager.h"
+    "src/rendering/InputManager.h"
+    "src/rendering/Renderer.h"
+    "src/scripting/LuaInterfaces.h")
 
 set(EXECUTABLE_NAME game)
 
