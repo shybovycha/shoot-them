@@ -36,8 +36,16 @@
       "version>=": "1.83#1"
     },
     {
-      "name": "rapidjson",
-      "version>=": "2023-04-27"
+        "name": "rapidjson",
+        "version>=": "2023-04-27"
+    },
+    {
+        "name": "lua",
+        "version>=": "5.4.6"
+    },
+    {
+        "name": "luabridge3",
+        "version>=": "3.0-rc3"
     }
   ],
   "builtin-baseline": "4cfabe769eaceb209ea37267e8c50c43b86a4a7b"

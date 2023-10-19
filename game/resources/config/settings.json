@@ -1,0 +1,13 @@
+{
+    "graphics": {
+        "driver": "OpenGL",
+        "resolution": {
+            "width": 1024,
+            "height": 768
+        },
+        "colorDepth": 16,
+        "stencilBuffer": true,
+        "fullScreen": false,
+        "vsync": true
+    }
+}

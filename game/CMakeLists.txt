@@ -4,40 +4,7 @@ project(game VERSION 1.0.2 LANGUAGES CXX)
 
 set(SOURCES
     "src/main.cpp"
-    "src/core/Settings.h"
-    "src/game/Level.h"
-    "src/game/Score.h"
-    "src/game/PlayerState.h"
-    "src/game/GameState.h"
-    "src/core/ActionDispatcher.h"
-    "src/renderer/IrrlichtEventReceiver.h"
-    "src/core/Renderer.h"
-    "src/core/ResourceManager.h"
-    "src/core/ModernResourceManager.h"
-    "src/renderer/IrrlichtRenderer.h"
-    "src/core/Application.h"
-    "src/core/QueueAction.h"
-    "src/core/Application.cpp"
-    "src/game/GameState.cpp"
-    "src/core/ActionDispatcher.cpp"
-    "src/renderer/IrrlichtEventReceiver.cpp"
-    "src/renderer/IrrlichtRenderer.cpp"
-    "src/game/Level.cpp"
-    "src/core/ModernResourceManager.cpp"
-    "src/game/PlayerState.cpp"
-    "src/game/Score.cpp"
-    "src/core/QueueAction.cpp"
-    "src/renderer/IrrlichtHUD.h"
-    "src/renderer/IrrlichtHUD.cpp"
-    "src/renderer/CScreenQuadSceneNode.h"
-    "src/renderer/CScreenQuadSceneNode.cpp"
-    "src/renderer/CDrunkShaderCallback.h"
-    "src/renderer/CDrunkShaderCallback.cpp"
-    "src/core/Vector3.h"
-    "src/core/SceneNode.h"
-    "src/core/SceneNode.cpp"
-    "src/renderer/IrrlichtSceneNode.h"
-    "src/renderer/IrrlichtSceneNode.cpp")
+)
 
 set(EXECUTABLE_NAME game)
 
@@ -78,22 +45,36 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 
 target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
-find_package(SFML COMPONENTS audio CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-audio)
+find_package(SFML COMPONENTS system graphics audio CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-system sfml-graphics sfml-audio)
 
-find_package(tinyxml2 CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE tinyxml2::tinyxml2)
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE assimp::assimp)
 
-find_package(irrlicht CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE Irrlicht)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glfw)
+
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
+
+find_package(globjects CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE globjects::globjects)
+
+# find_package(imgui CONFIG REQUIRED)
+# target_link_libraries(${EXECUTABLE_NAME} PRIVATE imgui::imgui)
+
+find_package(OpenGL REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${OPENGL_LIBRARIES})
+
+find_package(Lua REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LUA_LIBRARIES})
+target_include_directories(${EXECUTABLE_NAME} PRIVATE ${LUA_INCLUDE_DIR})
+
+find_path(LUABRIDGE3_INCLUDE_DIRS "luabridge3/LuaBridge/Array.h")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE ${LUABRIDGE3_INCLUDE_DIRS})
 
 # Copy resources
 add_custom_command(
     TARGET ${EXECUTABLE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/resources $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/resources
-)
-
-add_custom_command(
-    TARGET ${EXECUTABLE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/data $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/data
 )
