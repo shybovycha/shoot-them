@@ -16,6 +16,12 @@ function init_camera()
     scene_data.mouse_cursor_pos = inputs.mouse_position
 end
 
+function load_common_scene(load_level)
+    load_common_models()
+    load_level()
+    init_camera()
+end
+
 function update_camera(delta_time)
     -- update mouse position
     current_mouse_pos = inputs.mouse_position
@@ -50,7 +56,11 @@ function render_targets(delta_time)
     end
 end
 
-function render_scene(delta_time, render_level_fn)
+function render_common_scene(delta_time, render_level_fn)
+    update_camera(delta_time)
+
+    process_inputs()
+
     renderer:use_shader_program("default")
     renderer:use_framebuffer("default")
 
