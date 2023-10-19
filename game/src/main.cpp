@@ -408,8 +408,7 @@ int main()
 
     // define global classes: Vec2, Vec3, Vec4, Mat3, Mat4, Camera
     luabridge::getGlobalNamespace(luaState)
-            // .beginNamespace("engine")
-            .beginClass<Vector2>("Vec2")
+        .beginClass<Vector2>("Vec2")
             .addConstructor<void (*)(double, double)>()
             .addProperty("x", &Vector2::getX, &Vector2::setX)
             .addProperty("y", &Vector2::getY, &Vector2::setY)
@@ -420,12 +419,10 @@ int main()
             .addFunction("__mul", &Vector2::operator*)
             .addFunction("__unm", &Vector2::negate)
             .addFunction("__tostring", &Vector2::toString)
-            .endClass();
-        // .endNamespace();
+         .endClass();
 
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
-            .beginClass<Vector3>("Vec3")
+        .beginClass<Vector3>("Vec3")
             .addConstructor<void (*)(double, double, double)>()
             .addProperty("x", &Vector3::getX, &Vector3::setX)
             .addProperty("y", &Vector3::getY, &Vector3::setY)
@@ -437,12 +434,10 @@ int main()
             .addFunction("__mul", &Vector3::operator*)
             .addFunction("__unm", &Vector3::negate)
             .addFunction("__tostring", &Vector3::toString)
-            .endClass();
-       // .endNamespace();
+        .endClass();
 
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
-            .beginClass<Vector4>("Vec4")
+        .beginClass<Vector4>("Vec4")
             .addConstructor<void (*)(double, double, double, double)>()
             .addProperty("x", &Vector4::getX, &Vector4::setX)
             .addProperty("y", &Vector4::getY, &Vector4::setY)
@@ -455,35 +450,27 @@ int main()
             .addFunction("__mul", &Vector4::operator*)
             .addFunction("__unm", &Vector4::negate)
             .addFunction("__tostring", &Vector4::toString)
-            .endClass();
-        //.endNamespace();
+        .endClass();
 
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
             .beginClass<Matrix3>("Mat3")
             .endClass();
-        //.endNamespace();
 
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
             .beginClass<Matrix4>("Mat4")
             .endClass();
-        //.endNamespace();
 
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
-            .beginClass<Camera>("Camera")
+        .beginClass<Camera>("Camera")
             .addConstructor<void (*)(Vector3, Vector3, Vector3, Vector3)>()
             .addProperty("view_matrix", &Camera::getViewMatrix)
             .addProperty("projection_matrix", &Camera::getProjectionMatrix)
             .addFunction("rotate", &Camera::rotate)
-            .endClass();
-        //.endNamespace();
+         .endClass();
 
     // define renderer singleton
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
-            .beginClass<Renderer>("Renderer")
+        .beginClass<Renderer>("Renderer")
             .addFunction("use_shader_program", &Renderer::useShaderProgram)
             .addFunction("use_framebuffer", &Renderer::useFramebuffer)
             .addFunction("set_uniform",
@@ -493,87 +480,51 @@ int main()
                          luabridge::overload<const std::string&, Matrix4>(&Renderer::setUniform))
             .addFunction("set_texture", &Renderer::setTexture)
             .addFunction("draw_3d_model", &Renderer::draw3DModel)
-            .endClass();
-        //.endNamespace();
+        .endClass();
 
     auto renderer = std::make_unique<Renderer>();
-
-    /*luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("engine")
-            .addProperty("renderer", renderer.get(), false)
-        .endNamespace();*/
 
     auto rg1 = luabridge::push(luaState, renderer.get());
     lua_setglobal(luaState, "renderer");
 
-    if (!rg1)
-        std::cerr << rg1.message() << "//" << rg1.error();
-
     // define resource manager singleton
     luabridge::getGlobalNamespace(luaState)
-            // .beginNamespace("engine")
             .beginClass<ResourceManager>("ResourceManager")
             .addFunction("add_3d_model", &ResourceManager::add3DModel)
             .addFunction("add_texture", &ResourceManager::addTexture)
             .endClass();
-        //.endNamespace();
 
     auto resources = std::make_unique<ResourceManager>();
-
-    /*luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("engine")
-            .addProperty("resources", resources.get(), false)
-        .endNamespace();*/
 
     auto rg2 = luabridge::push(luaState, resources.get());
     lua_setglobal(luaState, "resources");
 
-    if (!rg2)
-        std::cerr << rg2.message() << "//" << rg2.error();
-
     // define input manager singleton
     luabridge::getGlobalNamespace(luaState)
-            //.beginNamespace("engine")
             .beginClass<InputManager>("InputManager")
             .addProperty("mouse_position", &InputManager::getMousePosition)
             .addFunction("is_mouse_button_pressed", &InputManager::isMouseButtonPressed)
             .endClass();
-        //.endNamespace();
 
     auto inputs = std::make_unique<InputManager>();
 
-    /*luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("engine")
-            .addProperty("inputs", inputs.get(), false)
-        .endNamespace();*/
-
     auto rg3 = luabridge::push(luaState, inputs.get());
     lua_setglobal(luaState, "inputs");
-
-    if (!rg3)
-        std::cerr << rg3.message() << "//" << rg3.error();
 
     // define global constants: MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT
     auto MOUSE_BUTTON_LEFT = 1;
     auto MOUSE_BUTTON_RIGHT = 2;
 
     auto r1 = luabridge::push(luaState, MOUSE_BUTTON_LEFT);
-    lua_setglobal(luaState, "MOUSE_BUTTON_LEFT");
-
-    if (!r1)
-        std::cerr << r1.message() << "//" << r1.error();
+    lua_setglobal(luaState, "MOUSE_BUTTON_LEFT");;
 
     auto r2 = luabridge::push(luaState, MOUSE_BUTTON_RIGHT);
     lua_setglobal(luaState, "MOUSE_BUTTON_RIGHT");
 
-    if (!rg2)
-        std::cerr << rg2.message() << "//" << rg2.error();
-
-    /*luabridge::getGlobalNamespace(luaState)
-        .beginNamespace("engine")
-            .addProperty("MOUSE_BUTTON_LEFT", &MOUSE_BUTTON_LEFT)
-            .addProperty("MOUSE_BUTTON_RIGHT", &MOUSE_BUTTON_RIGHT)
-        .endNamespace();*/
+    // scene scope data table
+    auto sceneData = luabridge::newTable(luaState);
+    auto r3 = luabridge::push(luaState, sceneData);
+    lua_setglobal(luaState, "scene_data");
 
     // load some code from Lua file
     int scriptLoadStatus = luaL_dofile(luaState, "resources/scenes/level1.lua");
