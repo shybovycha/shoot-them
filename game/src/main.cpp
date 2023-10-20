@@ -1,24 +1,21 @@
-#include "scripting/LuaInterfaces.h"
+#include "scripting/ScriptManager.h"
 
 int main()
 {
-    // create a Lua state
-    lua_State* luaState = luaL_newstate();
+    auto scriptManager = std::make_shared<ScriptManager>();
 
-    // load standard libs
-    luaL_openlibs(luaState);
+    auto renderer = std::make_shared<Renderer>();
+    auto resources = std::make_shared<ResourceManager>();
+    auto inputs = std::make_shared<InputManager>();
 
-    initLuaAPIs(luaState);
+    scriptManager->initLuaAPIs(renderer, resources, inputs);
 
     // load some code from Lua file
-    int scriptLoadStatus = luaL_dofile(luaState, "resources/scenes/level1.lua");
-
-    // define error reporter for any Lua error
-    report_errors(luaState, scriptLoadStatus);
+    scriptManager->loadScript("resources/scenes/level1.lua");
 
     // call function defined in Lua script
-    luabridge::LuaRef onLoad = luabridge::getGlobal(luaState, "on_load");
-    luabridge::LuaRef onRender = luabridge::getGlobal(luaState, "on_render");
+    auto onLoad = scriptManager->getGlobal("on_load");
+    auto onRender = scriptManager->getGlobal("on_render");
 
     if (onLoad.isValid())
     {

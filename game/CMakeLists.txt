@@ -14,7 +14,7 @@ set(SOURCES
     "src/system/InputManager.h"
     "src/system/ResourceManager.h"
     "src/system/SceneManager.h"
-    "src/scripting/LuaInterfaces.h")
+    "src/scripting/ScriptManager.h")
 
 set(EXECUTABLE_NAME game)
 
