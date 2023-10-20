@@ -10,9 +10,10 @@ set(SOURCES
     "src/math/Matrix3.h"
     "src/math/Matrix4.h"
     "src/rendering/Camera.h"
-    "src/rendering/ResourceManager.h"
-    "src/rendering/InputManager.h"
     "src/rendering/Renderer.h"
+    "src/system/InputManager.h"
+    "src/system/ResourceManager.h"
+    "src/system/SceneManager.h"
     "src/scripting/LuaInterfaces.h")
 
 set(EXECUTABLE_NAME game)

@@ -18,9 +18,9 @@ extern "C" {
 #include "../math/Vector4.h"
 
 #include "../rendering/Camera.h"
-#include "../rendering/InputManager.h"
 #include "../rendering/Renderer.h"
-#include "../rendering/ResourceManager.h"
+#include "../system/InputManager.h"
+#include "../system/ResourceManager.h"
 
 void report_errors(lua_State* luaState, int status)
 {
