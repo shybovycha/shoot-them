@@ -6,7 +6,10 @@
 build
 .DS_Store
 .vs
+.cache
+.fleet
 CMakeSettings.json
+CMakeFiles/
 .project
 cmake-build-*/
 .idea

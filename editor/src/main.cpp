@@ -1,5 +1,6 @@
 #include <iostream>
-#include <format>
+
+#include <fmt/core.h>
 
 #define GLFW_INCLUDE_GLEXT
 #include <GLFW/glfw3.h>
@@ -76,20 +77,20 @@ int main()
 
         jsonValidator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
 
-        std::cerr << std::format("Invalid schema: {}\n", sb.GetString());
+        std::cerr << fmt::format("Invalid schema: {}\n", sb.GetString());
 
         sb.Clear();
 
         jsonValidator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
 
-        std::cerr << std::format("Invalid document: {}\n", sb.GetString());
+        std::cerr << fmt::format("Invalid document: {}\n", sb.GetString());
     }
 
-    std::cout << std::format("Original JSON:\n {}\n", testJson);
+    std::cout << fmt::format("Original JSON:\n {}\n", testJson);
 
     auto s = doc["long-string"].GetString();
 
-    std::cout << std::format("long string: '{}'\n", s);
+    std::cout << fmt::format("long string: '{}'\n", s);
 
     return 0;
 }
@@ -116,7 +117,7 @@ int main1(void)
     float scale_x, scale_y;
     glfwGetMonitorContentScale(monitor, &scale_x, &scale_y);
 
-    std::cout << std::format("Monitor scale: {} x {}\n", scale_x, scale_y);
+    std::cout << fmt::format("Monitor scale: {} x {}\n", scale_x, scale_y);
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(1024 * scale_x, 768 * scale_y, "Hello World", nullptr, nullptr);
@@ -176,7 +177,7 @@ int main1(void)
     };
 
     ifd::FileDialog::Instance().DeleteTexture = [](void* tex) {
-        GLuint texID = (GLuint) tex;
+        GLuint texID = static_cast<GLuint>(reinterpret_cast<long>(tex));
         glDeleteTextures(1, &texID);
     };
 
@@ -351,7 +352,7 @@ int main1(void)
 
                 if (node_selected != -1)
                 {
-                    ImGui::SeparatorText(std::format("Properties (node {})", node_selected).c_str());
+                    ImGui::SeparatorText(fmt::format("Properties (node {})", node_selected).c_str());
 
                     static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
 
@@ -371,16 +372,15 @@ int main1(void)
                             ImGui::TableNextRow();
 
                             ImGui::TableSetColumnIndex(0);
-                            char buf[32];
-                            sprintf(buf, "Hello %d,%d", 0, row);
-                            ImGui::TextUnformatted(buf);
+                            std::string s = fmt::format("Hello {}, {}", 0, row);
+                            ImGui::TextUnformatted(s.c_str());
 
                             ImGui::TableSetColumnIndex(1);
                             float vec3f[3];
                             if (row % 2 == 0)
                                 ImGui::InputFloat3("##label", vec3f);
                             else
-                                ImGui::Button(buf, ImVec2(-FLT_MIN, 0.0f));
+                                ImGui::Button(s.c_str(), ImVec2(-FLT_MIN, 0.0f));
                         }
                         ImGui::EndTable();
                     }
@@ -509,7 +509,7 @@ void main()\n\
                     ImNodes::BeginNode(node_id);
 
                     ImNodes::BeginNodeTitleBar();
-                    ImGui::TextUnformatted(std::format("state", node_id).c_str());
+                    ImGui::TextUnformatted(fmt::format("state", node_id).c_str());
                     ImNodes::EndNodeTitleBar();
 
                     ImNodes::BeginInputAttribute(node_id << 8);
@@ -634,7 +634,7 @@ void main()\n\
                     ImNodes::BeginNode(node_id);
 
                     ImNodes::BeginNodeTitleBar();
-                    ImGui::TextUnformatted(std::format("node {}", node_id).c_str());
+                    ImGui::TextUnformatted(fmt::format("node {}", node_id).c_str());
                     ImNodes::EndNodeTitleBar();
 
                     ImNodes::BeginInputAttribute(node_id << 8);

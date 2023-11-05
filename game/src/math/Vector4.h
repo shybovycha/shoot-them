@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <format>
+#include <fmt/core.h>
 
 class Vector4
 {
@@ -90,7 +90,7 @@ public:
 
     std::string toString() const
     {
-        return std::format("Vector4({}, {}, {}, {})", m_x, m_y, m_z, m_w);
+        return fmt::format("Vector4({}, {}, {}, {})", m_x, m_y, m_z, m_w);
     }
 
 private:

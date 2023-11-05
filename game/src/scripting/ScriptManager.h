@@ -6,7 +6,7 @@ extern "C" {
     #include <lualib.h>
 }
 
-#include <format>
+#include <fmt/core.h>
 #include <iostream>
 
 #include <luabridge3/LuaBridge/LuaBridge.h>
@@ -180,7 +180,7 @@ private:
             return;
         }
 
-        std::cerr << std::format("[LUA ERROR] {}\n", lua_tostring(luaState, -1));
+        std::cerr << fmt::format("[LUA ERROR] {}\n", lua_tostring(luaState, -1));
 
         // remove error message from Lua state
         lua_pop(luaState, 1);

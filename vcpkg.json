@@ -5,7 +5,11 @@
   "dependencies": [
     {
       "name": "sfml",
-      "version>=": "2.6.0#18"
+      "version>=": "2.6.0#19"
+    },
+    {
+      "name": "fmt",
+      "version>=": "10.1.1"
     },
     {
       "name": "globjects",

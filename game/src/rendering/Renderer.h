@@ -1,6 +1,6 @@
 #pragma once
 
-#include <format>
+#include <fmt/core.h>
 #include <iostream>
 
 #include "../math/Vector2.h"
@@ -13,41 +13,41 @@ class Renderer
 public:
     void useShaderProgram(const std::string& resourceName)
     {
-        std::cout << std::format("bind shader '{}'\n", resourceName);
+        std::cout << fmt::format("bind shader '{}'\n", resourceName);
     }
 
     void useFramebuffer(const std::string& resourceName)
     {
-        std::cout << std::format("bind framebuffer '{}'\n", resourceName);
+        std::cout << fmt::format("bind framebuffer '{}'\n", resourceName);
     }
 
     void setUniform(const std::string& variableName, Vector2 value)
     {
-        std::cout << std::format("set uniform '{}' to <vec2>({}, {})\n", variableName, value.getX(), value.getY());
+        std::cout << fmt::format("set uniform '{}' to <vec2>({}, {})\n", variableName, value.getX(), value.getY());
     }
 
     void setUniform(const std::string& variableName, Vector3 value)
     {
-        std::cout << std::format("set uniform '{}' to <vec3>({}, {}, {})\n", variableName, value.getX(), value.getY(), value.getZ());
+        std::cout << fmt::format("set uniform '{}' to <vec3>({}, {}, {})\n", variableName, value.getX(), value.getY(), value.getZ());
     }
 
     void setUniform(const std::string& variableName, Matrix3 value)
     {
-        std::cout << std::format("set uniform '{}' to <mat3>()\n", variableName);
+        std::cout << fmt::format("set uniform '{}' to <mat3>()\n", variableName);
     }
 
     void setUniform(const std::string& variableName, Matrix4 value)
     {
-        std::cout << std::format("set uniform '{}' to <mat4>()\n", variableName);
+        std::cout << fmt::format("set uniform '{}' to <mat4>()\n", variableName);
     }
 
     void setTexture(const std::string& variableName, const std::string& resourceName)
     {
-        std::cout << std::format("set uniform '{}' to <texture>({})\n", variableName, resourceName);
+        std::cout << fmt::format("set uniform '{}' to <texture>({})\n", variableName, resourceName);
     }
 
     void draw3DModel(const std::string& resourceName)
     {
-        std::cout << std::format("draw VAO {}\n", resourceName);
+        std::cout << fmt::format("draw VAO {}\n", resourceName);
     }
 };

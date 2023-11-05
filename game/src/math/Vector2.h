@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <format>
+#include <fmt/core.h>
 
 class Vector2
 {
@@ -70,7 +70,7 @@ public:
 
     std::string toString() const
     {
-        return std::format("Vector2({}, {})", m_x, m_y);
+        return fmt::format("Vector2({}, {})", m_x, m_y);
     }
 
 private:

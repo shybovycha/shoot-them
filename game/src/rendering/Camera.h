@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cmath>
-#include <format>
+#include <fmt/core.h>
 #include <iostream>
 
 #include "../math/Vector3.h"
@@ -29,7 +29,7 @@ public:
 
     void rotate(double dx, double dy)
     {
-        std::cout << std::format("rotated camera by {}, {}\n", dx, dy);
+        std::cout << fmt::format("rotated camera by {}, {}\n", dx, dy);
     }
 
 private:
