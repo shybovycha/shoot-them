@@ -11,7 +11,7 @@ int main()
     scriptManager->initLuaAPIs(renderer, resources, inputs);
 
     // load some code from Lua file
-    scriptManager->loadScript("resources/scenes/level1.lua");
+    scriptManager->loadScript("resources/scenes/main.lua");
 
     // call function defined in Lua script
     auto onLoad = scriptManager->getGlobal("on_load");
@@ -23,6 +23,8 @@ int main()
 
         if (!rc1.wasOk())
             std::cerr << rc1.errorMessage();
+    } else {
+        std::cerr << "Could not load `on_load` function in the scene";
     }
 
     if (onRender.isValid())
@@ -31,6 +33,8 @@ int main()
 
         if (!rc2.wasOk())
             std::cerr << rc2.errorMessage();
+    } else {
+        std::cerr << "Could not load `on_render` function in the scene";
     }
 
     return 0;

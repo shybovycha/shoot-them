@@ -1,6 +1,4 @@
-require "resources/scenes/common"
-
-function load_level()
+function on_load()
     resources:add_3d_model("room", "resources/models/old/room1.dae")
 
     scene_data.targets = {
@@ -16,15 +14,7 @@ function load_level()
     }
 end
 
-function render_level(delta_time)
+function on_render(delta_time)
     renderer:set_uniform("model", Vec3(0, 0, 0))
     renderer:draw_3d_model("room")
-end
-
-function on_load()
-    load_common_scene(load_level)
-end
-
-function on_render(delta_time)
-    render_common_scene(delta_time, render_level)
 end

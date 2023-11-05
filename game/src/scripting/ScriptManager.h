@@ -7,7 +7,9 @@ extern "C" {
 }
 
 #include <fmt/core.h>
+
 #include <iostream>
+#include <fstream>
 
 #include <luabridge3/LuaBridge/LuaBridge.h>
 
@@ -115,6 +117,15 @@ public:
         auto rg1 = luabridge::push(luaState, renderer.get());
         lua_setglobal(luaState, "renderer");
 
+        // define script manager singleton
+        luabridge::getGlobalNamespace(luaState)
+                .beginClass<ScriptManager>("ScriptManager")
+                .addFunction("load_scene", &ScriptManager::loadScene)
+                .endClass();
+
+        auto rg4 = luabridge::push(luaState, this);
+        lua_setglobal(luaState, "scenes");
+
         // define resource manager singleton
         luabridge::getGlobalNamespace(luaState)
                 .beginClass<ResourceManager>("ResourceManager")
@@ -159,6 +170,25 @@ public:
 
         // define error reporter for any Lua error
         reportLuaErrors(scriptLoadStatus);
+    }
+
+    luabridge::LuaRef loadScene(const std::string& path)
+    {
+        std::ifstream f{ path };
+        std::string script{ std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
+        std::string code = script + "\nreturn { on_load = on_load, on_render = on_render }";
+
+        std::cout << fmt::format("[C++ INFO] loading scene {}\n", path);
+
+        // run the new scene code
+        int scriptLoadStatus = luaL_dostring(luaState, code.c_str());
+
+        // define error reporter for any Lua error
+        reportLuaErrors(scriptLoadStatus);
+
+        auto sceneFn = luabridge::get<luabridge::LuaRef>(luaState, 0).value();
+
+        return sceneFn()[0];
     }
 
     luabridge::LuaRef getGlobal(const std::string& name)

@@ -16,12 +16,6 @@ function init_camera()
     scene_data.mouse_cursor_pos = inputs.mouse_position
 end
 
-function load_common_scene(load_level)
-    load_common_models()
-    load_level()
-    init_camera()
-end
-
 function update_camera(delta_time)
     -- update mouse position
     current_mouse_pos = inputs.mouse_position
@@ -56,7 +50,18 @@ function render_targets(delta_time)
     end
 end
 
-function render_common_scene(delta_time, render_level_fn)
+current_level = nil
+
+function on_load()
+    load_common_models()
+
+    current_level = scenes:load_scene("./resources/scenes/level1.lua")
+    current_level.on_load()
+
+    init_camera()
+end
+
+function on_render(delta_time)
     update_camera(delta_time)
 
     process_inputs()
@@ -68,7 +73,7 @@ function render_common_scene(delta_time, render_level_fn)
     renderer:set_uniform("projection", scene_data.camera.projection_matrix)
 
     if render_level_fn then
-        render_level_fn(delta_time)
+        current_level.on_render(delta_time)
     end
 
     render_targets(delta_time)
