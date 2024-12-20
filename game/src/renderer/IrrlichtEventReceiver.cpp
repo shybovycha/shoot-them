@@ -14,7 +14,14 @@ bool IrrlichtEventReceiver::OnEvent(const irr::SEvent& event)
 {
     if (gameState->getCurrentState() == GameStateType::PLAYING)
     {
-        if (event.EventType == irr::EET_MOUSE_INPUT_EVENT)
+        if (event.EventType == irr::EET_KEY_INPUT_EVENT && !event.KeyInput.PressedDown)
+        {
+            if (event.KeyInput.Key == irr::KEY_KEY_R)
+            {
+                actionDispatcher->reload();
+            }
+        }
+        else if (event.EventType == irr::EET_MOUSE_INPUT_EVENT)
         {
             if (event.MouseInput.Event == irr::EMIE_LMOUSE_PRESSED_DOWN)
             {
