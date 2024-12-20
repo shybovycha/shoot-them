@@ -30,6 +30,12 @@ Game editor now has a proper UI and is generally way more useful, allowing one t
 
 [Video on YouTube](https://youtu.be/WDg1ctg_0GM)
 
+**2023:**
+
+Slightly reworked the shader so it looks nicer:
+
+![Game screenshot from 2023](https://github.com/shybovycha/shoot-them/raw/master/screenshots/Shoot%20Them!%2021_09_2023.png)
+
 ## Build
 
 Use CMake:
@@ -94,9 +100,11 @@ This could be done with `vcpkg x-update-baseline`.
 - [x] update font in menu
 - [x] ~~load UI from file~~
 - [x] use shader for the post-processing ("drunk" effect)
-- [ ] clamp the rendered picture so there are no artifacts (mb zoom the quad a bit)
+- [x] clamp the rendered picture so there are no artifacts (mb zoom the quad a bit)
 - [x] fix collision detection - potentially the ray overlaps the rendering quad first and hence no collisions with targets are detected (either hide the quad or start ray a bit further from the camera)
 - [ ] add hints for controls to the first level
+- [ ] create & use target model for the first level
+- [ ] add level transition animation
 
 ### Editor
 
@@ -132,12 +140,13 @@ This could be done with `vcpkg x-update-baseline`.
 - [x] camera translation does not work in **current** camera plane, but rather in initial
 - [x] moving selected entity relies on the **absolute** offset, whilst it should rely on **relative** offset instead
 - [x] ~~load UI from file~~
+- [ ] use chicken model instead of sphere for target placement
 
 ### Miscellanious
 
 - [ ] extract level reader & writer into separate library
 - [x] update Irrlicht
-- [ ] replace Irrlicht with Ogre (?)
-- [ ] add github releases
-- [ ] document progress
-- [ ] add screenshots to github page
+- [ ] replace Irrlicht with OGRE or [Skylicht](https://github.com/skylicht-lab/skylicht-engine) or [Dilligent](https://github.com/DiligentGraphics/DiligentEngine) or anything newer than DX9
+- [x] add github releases
+- [x] document progress
+- [x] add screenshots to github page
