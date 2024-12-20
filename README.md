@@ -34,7 +34,7 @@ Game editor now has a proper UI and is generally way more useful, allowing one t
 
 Slightly reworked the shader so it looks nicer:
 
-![Game screenshot from 2023](https://github.com/shybovycha/shoot-them/raw/master/screenshots/Shoot%20Them!%2021_09_2023.png)
+![Game screenshot from 2023](https://github.com/shybovycha/shoot-them/blob/master/screenshots/ShootThem!%2021_09_2023.png)
 
 ## Build
 
