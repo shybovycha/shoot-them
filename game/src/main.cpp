@@ -1,39 +1,57 @@
-#include "core/ActionDispatcher.h"
-#include "core/Application.h"
-#include "renderer/IrrlichtRenderer.h"
-#include "core/ModernResourceManager.h"
+#include <iostream>
 
-#ifdef _IRR_WINDOWS_
-#pragma comment(lib, "Irrlicht.lib")
-#endif
+#include <fmt/core.h>
 
-/*
-    --------------------------------------------
+#include "helpers.hpp"
+#include "scene.hpp"
 
-    This part of code is modern, written with few best practices in mind.
-    It also introduces some significant changes to the game architecture (like game state,
-    loading levels from files, bringing some sane format for game resources files, etc.).
-    This is essentially a new version of the game, taking into consideration all the knowledge
-    acquired in last 13 years.
-    Feel free to blame the author for beating Web for past decade and the global crisis(-es)
-    going on in the world outside if you find this code shit.
-
-    (c) Artem Shubovych, 10 September 2020.
-
-    --------------------------------------------
-*/
+#include "scenes/scene1.hpp"
 
 int main()
 {
-    std::shared_ptr<ResourceManager> resourceManager = std::make_shared<ModernResourceManager>();
-    std::shared_ptr<GameState> gameState = std::make_shared<GameState>();
-    std::shared_ptr<ActionDispatcher> actionDispatcher = std::make_shared<ActionDispatcher>(gameState);
-    std::shared_ptr<Renderer> renderer = std::make_shared<IrrlichtRenderer>(gameState, actionDispatcher);
+    GLFWwindow* window = initializeGraphics();
 
-    std::shared_ptr<Application> application = std::make_shared<Application>(renderer, gameState, resourceManager,
-            actionDispatcher);
+    if (window == nullptr)
+    {
+        std::cerr << fmt::format("Could not get window instance\n");
+        return -1;
+    }
 
-    application->run();
+    std::vector<std::shared_ptr<Scene>> scenes{
+        std::make_unique<Scene1>()
+    };
+
+    auto currentScene = scenes.begin();
+    auto previousTime = glfwGetTime();
+    auto currentTime = previousTime;
+
+    std::cout << fmt::format("Current scene: {}\n", currentScene != scenes.end());
+
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {
+        /* Poll for and process events */
+        glfwPollEvents();
+
+        /* Render here */
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        currentTime = glfwGetTime();
+        float dt = currentTime - previousTime;
+        previousTime = currentTime;
+
+        (*currentScene)->render(dt);
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+    }
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 
     return 0;
 }
