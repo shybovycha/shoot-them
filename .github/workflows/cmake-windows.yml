@@ -24,7 +24,9 @@ jobs:
         echo "2: ${VCPKG_INSTALLATION_ROOT}"
         echo "3: $VCPKG_INSTALLATION_ROOT"
         echo "4: $env:VCPKG_INSTALLATION_ROOT"
-        ls ${VCPKG_INSTALLATION_ROOT}
+        ls $env:VCPKG_INSTALLATION_ROOT
+        ls $env:VCPKG_INSTALLATION_ROOT/scripts
+        ls $env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems
         
 
     - name: Configure CMake
