@@ -1,29 +1,13 @@
-cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.29 FATAL_ERROR)
 
-project(game VERSION 1.0.2 LANGUAGES CXX)
+project(game VERSION 2.0.2 LANGUAGES CXX)
 
 set(SOURCES
     "src/main.cpp"
+    "src/application.cpp"
 )
 
 set(EXECUTABLE_NAME game)
-
-# set(LIBRARIES
-#         ${X11_LIBRARIES}
-#         ${OPENGL_LIBRARIES}
-#         ${ZLIB_LIBRARIES})
-
-# if(NOT APPLE)
-#     set(LIBRARIES ${LIBRARIES} ${X11_Xxf86vm_LIB})
-# endif()
-
-# if(APPLE)
-#     find_library(IOKIT NAMES IOKit)
-#     find_library(OpenGL NAMES OpenGL)
-#     find_library(COREVIDEO NAMES CoreVideo)
-#     find_library(COCOA NAMES Cocoa)
-#     set(LIBRARIES ${LIBRARIES} ${IOKIT} ${COREVIDEO} ${COCOA})
-# endif()
 
 if(APPLE)
     file(GLOB RESOURCE_FILES resources)
@@ -45,36 +29,30 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 
 target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
-find_package(SFML COMPONENTS audio CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-audio)
+# find_package(RapidJSON CONFIG REQUIRED)
+# target_link_libraries(main PRIVATE rapidjson)
 
-find_package(tinyxml2 CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE tinyxml2::tinyxml2)
+# find_package(imgui CONFIG REQUIRED)
+# target_link_libraries(main PRIVATE imgui::imgui)
 
-find_package(assimp CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE assimp::assimp)
+# find_package(imguizmo CONFIG REQUIRED)
+# target_link_libraries(main PRIVATE imguizmo::imguizmo)
 
-find_package(glfw3 CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE glfw)
+find_package(GLEW REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE GLEW::GLEW)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
 
-find_package(globjects CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE globjects::globjects)
+find_package(SDL2 CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME}
+    PRIVATE
+    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+)
 
-# find_package(imgui CONFIG REQUIRED)
-# target_link_libraries(${EXECUTABLE_NAME} PRIVATE imgui::imgui)
-
-find_package(OpenGL REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PUBLIC ${OPENGL_LIBRARIES})
-
-# find_package(Lua REQUIRED)
-# target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${LUA_LIBRARIES})
-# target_include_directories(${EXECUTABLE_NAME} PRIVATE ${LUA_INCLUDE_DIR})
-
-# find_path(LUABRIDGE3_INCLUDE_DIRS "luabridge3/LuaBridge/Array.h")
-# target_include_directories(${EXECUTABLE_NAME} PRIVATE ${LUABRIDGE3_INCLUDE_DIRS})
+find_package(SDL2_image CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)
 
 # Copy resources
 add_custom_command(
