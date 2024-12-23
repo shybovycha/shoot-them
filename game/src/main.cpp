@@ -10,7 +10,7 @@ int main()
         app->update();
     }
 
-    app->close();
+    app->cleanup();
 
     return 0;
 }

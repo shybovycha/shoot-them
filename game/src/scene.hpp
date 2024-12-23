@@ -2,10 +2,14 @@
 
 class Scene
 {
-    public:
-        virtual void load() = 0;
+public:
+    virtual ~Scene() {
+        cleanup();
+    }
 
-        virtual void render(float dt) = 0;
+    virtual void init() = 0;
 
-        virtual void unload() = 0;
+    virtual void render(float dt) = 0;
+
+    virtual void cleanup() = 0;
 };

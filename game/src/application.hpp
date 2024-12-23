@@ -1,11 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <fmt/format.h>
+#include "stdafx.hpp"
 
-#include <SDL2/SDL.h>
-#include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include "scenemanager.hpp"
 
 struct Application {
     bool isRunning;
@@ -13,9 +10,11 @@ struct Application {
     SDL_Window* window;
     SDL_GLContext glContext;
 
+    std::unique_ptr<SceneManager> sceneManager;
+
     void init();
 
     void update();
 
-    void close();
+    void cleanup();
 };

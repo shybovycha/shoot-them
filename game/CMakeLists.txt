@@ -29,6 +29,8 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 
 target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
+target_precompile_headers(${EXECUTABLE_NAME} PRIVATE "src/stdafx.hpp")
+
 # find_package(RapidJSON CONFIG REQUIRED)
 # target_link_libraries(main PRIVATE rapidjson)
 

@@ -10,7 +10,7 @@ void Application::init() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    this->window = SDL_CreateWindow(
+    window = SDL_CreateWindow(
         "ShootThem!",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -19,14 +19,14 @@ void Application::init() {
         SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
     );
 
-    if (!this->window) {
+    if (!window) {
         std::cerr << "Failed to create SDL window: " << SDL_GetError() << std::endl;
         throw std::runtime_error("Initialization failed");
     }
 
-    this->glContext = SDL_GL_CreateContext(this->window);
+    glContext = SDL_GL_CreateContext(window);
 
-    if (!this->glContext) {
+    if (!glContext) {
         std::cerr << "Failed to create OpenGL context: " << SDL_GetError() << std::endl;
         throw std::runtime_error("Initialization failed");
     }
@@ -38,7 +38,9 @@ void Application::init() {
         throw std::runtime_error("Initialization failed");
     }
 
-    this->isRunning = true;
+    sceneManager = std::make_unique<SceneManager>();
+
+    isRunning = true;
 }
 
 void Application::update() {
@@ -46,7 +48,7 @@ void Application::update() {
 
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
-            this->isRunning = false;
+            isRunning = false;
         }
     }
 
@@ -54,11 +56,11 @@ void Application::update() {
 
     // TODO
 
-    SDL_GL_SwapWindow(this->window);
+    SDL_GL_SwapWindow(window);
 }
 
-void Application::close() {
-    SDL_GL_DeleteContext(this->glContext);
-    SDL_DestroyWindow(this->window);
+void Application::cleanup() {
+    SDL_GL_DeleteContext(glContext);
+    SDL_DestroyWindow(window);
     SDL_Quit();
 }
