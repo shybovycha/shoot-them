@@ -1,6 +1,6 @@
 #include "shader.hpp"
 
-std::string readFile(std::string_view path)
+static std::string readFile(std::string_view path)
 {
     std::ifstream file {std::string(path)};
     
@@ -12,7 +12,7 @@ std::string readFile(std::string_view path)
     return std::string(std::istreambuf_iterator<char>(file), {});
 }
 
-GLuint compileShader(std::string_view source, GLenum type)
+static GLuint compileShader(std::string_view source, GLenum type)
 {
     GLuint shader = glCreateShader(type);
 

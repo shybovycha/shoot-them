@@ -4,7 +4,8 @@ int main()
 {
     auto app = std::make_unique<Application>();
 
-    while (app->isRunning) {
+    while (app->isRunning)
+    {
         app->update();
     }
 
