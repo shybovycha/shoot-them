@@ -49,6 +49,9 @@ target_compile_options(${EXECUTABLE_NAME} PUBLIC "$<$<C_COMPILER_ID:MSVC>:/utf-8
 # find_package(imguizmo CONFIG REQUIRED)
 # target_link_libraries(main PRIVATE imguizmo::imguizmo)
 
+# find_path(MINIAUDIO_INCLUDE_DIRS "miniaudio.h")
+# target_include_directories(${EXECUTABLE_NAME} PRIVATE ${MINIAUDIO_INCLUDE_DIRS})
+
 find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
 
