@@ -8,6 +8,7 @@ set(SOURCES
     "src/scenemanager.cpp"
     "src/scenes/scene1.cpp"
     "src/scenes/scene2.cpp"
+    "src/shader.cpp"
 )
 
 set(EXECUTABLE_NAME game)
