@@ -5,10 +5,6 @@
   "builtin-baseline": "4fcf123fe53c63db265b5841a5aeff06cec375a1",
   "dependencies": [
     {
-      "name": "assimp",
-      "version>=": "5.3.1#3"
-    },
-    {
       "name": "glew",
       "version>=": "2.2.0#4"
     },
@@ -17,28 +13,8 @@
       "version>=": "0.9.9.8#2"
     },
     {
-      "name": "imgui",
-      "features": [
-        "glfw-binding",
-        "opengl3-binding"
-      ],
-      "version>=": "1.90"
-    },
-    {
-      "name": "imguizmo",
-      "version>=": "2024-05-29#1"
-    },
-    {
-      "name": "rapidjson",
-      "version>=": "2023-07-17"
-    },
-    {
       "name": "sdl2",
       "version>=": "2.30.10"
-    },
-    {
-      "name": "tinyxml2",
-      "version>=": "9.0.0"
     },
     {
       "name": "sdl2-image",
@@ -47,6 +23,14 @@
     {
       "name": "fmt",
       "version>=": "11.0.2"
+    },
+    {
+      "name": "tinygltf",
+      "version>=": "2.9.3#0"
+    },
+    {
+      "name": "stb",
+      "version>=": "2024-07-29#1"
     }
   ]
 }

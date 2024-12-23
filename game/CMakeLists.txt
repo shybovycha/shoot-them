@@ -9,6 +9,7 @@ set(SOURCES
     "src/scenes/scene1.cpp"
     "src/scenes/scene2.cpp"
     "src/shader.cpp"
+    "src/gltfmodel.cpp"
 )
 
 set(EXECUTABLE_NAME game)
@@ -48,6 +49,9 @@ target_compile_options(${EXECUTABLE_NAME} PUBLIC "$<$<C_COMPILER_ID:MSVC>:/utf-8
 # find_package(imguizmo CONFIG REQUIRED)
 # target_link_libraries(main PRIVATE imguizmo::imguizmo)
 
+find_package(Stb REQUIRED)
+target_include_directories(${EXECUTABLE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
+
 find_package(GLEW REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE GLEW::GLEW)
 
@@ -63,6 +67,12 @@ target_link_libraries(${EXECUTABLE_NAME}
 
 find_package(SDL2_image CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)
+
+set(TINYGLTF_HEADER_ONLY ON CACHE INTERNAL "" FORCE)
+set(TINYGLTF_INSTALL OFF CACHE INTERNAL "" FORCE)
+
+find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
+target_include_directories(${EXECUTABLE_NAME} PRIVATE ${TINYGLTF_INCLUDE_DIRS})
 
 # Copy resources
 add_custom_command(
