@@ -1,7 +1,6 @@
 #include "scene2.hpp"
 
 Scene2::Scene2()
-    : Scene()
 {
 }
 
