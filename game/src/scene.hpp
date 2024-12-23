@@ -3,13 +3,7 @@
 class Scene
 {
 public:
-    virtual ~Scene() {
-        cleanup();
-    }
-
-    virtual void init() = 0;
+    virtual ~Scene() = default;
 
     virtual void render(float dt) = 0;
-
-    virtual void cleanup() = 0;
 };

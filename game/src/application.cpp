@@ -40,6 +40,11 @@ void Application::init() {
 
     sceneManager = std::make_unique<SceneManager>();
 
+    sceneManager->addScene("scene1", std::make_unique<Scene1>());
+    sceneManager->addScene("scene2", std::make_unique<Scene2>());
+
+    sceneManager->setScene("scene1");
+
     isRunning = true;
 }
 
@@ -54,7 +59,7 @@ void Application::update() {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // TODO
+    sceneManager->currentScene->render(0.f);
 
     SDL_GL_SwapWindow(window);
 }

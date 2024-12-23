@@ -4,12 +4,12 @@
 
 #include "../scene.hpp"
 
-class Scene1 : public Scene
+class Scene2 : public Scene
 {
 public:
-    Scene1();
+    Scene2();
 
-    ~Scene1();
+    ~Scene2();
 
     void render(float dt);
 };

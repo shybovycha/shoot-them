@@ -4,6 +4,9 @@
 
 #include "scenemanager.hpp"
 
+#include "scenes/scene1.hpp"
+#include "scenes/scene2.hpp"
+
 struct Application {
     bool isRunning;
 

@@ -5,6 +5,9 @@ project(game VERSION 2.0.2 LANGUAGES CXX)
 set(SOURCES
     "src/main.cpp"
     "src/application.cpp"
+    "src/scenemanager.cpp"
+    "src/scenes/scene1.cpp"
+    "src/scenes/scene2.cpp"
 )
 
 set(EXECUTABLE_NAME game)
@@ -30,6 +33,10 @@ set_target_properties(${EXECUTABLE_NAME} PROPERTIES
 target_compile_features(${EXECUTABLE_NAME} PRIVATE cxx_std_20)
 
 target_precompile_headers(${EXECUTABLE_NAME} PRIVATE "src/stdafx.hpp")
+
+# fixes "static_assert failed: 'Unicode support requires compiling with /utf-8'" on Windows
+target_compile_options(${EXECUTABLE_NAME} PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+target_compile_options(${EXECUTABLE_NAME} PUBLIC "$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 
 # find_package(RapidJSON CONFIG REQUIRED)
 # target_link_libraries(main PRIVATE rapidjson)
