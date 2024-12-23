@@ -3,12 +3,12 @@
 static std::string readFile(std::string_view path)
 {
     std::ifstream file {std::string(path)};
-    
+
     if (!file)
     {
-        throw std::runtime_error(std::format("Failed to open file: {}", path));
+        throw std::runtime_error(fmt::format("Failed to open file: {}", path));
     }
-    
+
     return std::string(std::istreambuf_iterator<char>(file), {});
 }
 
@@ -31,7 +31,7 @@ static GLuint compileShader(std::string_view source, GLenum type)
         std::array<GLchar, 512> infoLog;
         glGetShaderInfoLog(shader, infoLog.size(), nullptr, infoLog.data());
         glDeleteShader(shader);
-        throw std::runtime_error(std::format("Shader compilation failed: {}", infoLog.data()));
+        throw std::runtime_error(fmt::format("Shader compilation failed: {}", infoLog.data()));
     }
 
     return shader;
@@ -44,7 +44,7 @@ Shader::Shader(std::string_view vertexShaderPath, std::string_view fragmentShade
 
     if (!vertexShader)
     {
-        throw std::runtime_error(std::format("Can not compile vertex shader: {}", vertexShaderPath));
+        throw std::runtime_error(fmt::format("Can not compile vertex shader: {}", vertexShaderPath));
     }
 
     auto fragmentSource = readFile(fragmentShaderPath);
@@ -53,7 +53,7 @@ Shader::Shader(std::string_view vertexShaderPath, std::string_view fragmentShade
     if (!fragmentShader)
     {
         glDeleteShader(vertexShader);
-        throw std::runtime_error(std::format("Can not compile fragment shader: {}", fragmentShaderPath));
+        throw std::runtime_error(fmt::format("Can not compile fragment shader: {}", fragmentShaderPath));
     }
 
     program = glCreateProgram();
@@ -74,7 +74,7 @@ Shader::Shader(std::string_view vertexShaderPath, std::string_view fragmentShade
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
         glDeleteProgram(program);
-        throw std::runtime_error(std::format("Can not link shader program: {}", infoLog.data()));
+        throw std::runtime_error(fmt::format("Can not link shader program: {}", infoLog.data()));
     }
 
     glDeleteShader(vertexShader);

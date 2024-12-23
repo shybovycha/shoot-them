@@ -23,8 +23,7 @@ public:
     bool isRunning;
 
 private:
-    SDL_Window* window;
-    SDL_GLContext glContext;
+    GLFWwindow* window;
 
     std::unique_ptr<SceneManager> sceneManager;
 };

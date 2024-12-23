@@ -27,7 +27,7 @@ else()
 endif()
 
 set_target_properties(${EXECUTABLE_NAME} PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS ON
 )
@@ -52,24 +52,20 @@ target_compile_options(${EXECUTABLE_NAME} PUBLIC "$<$<C_COMPILER_ID:MSVC>:/utf-8
 find_package(Stb REQUIRED)
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${Stb_INCLUDE_DIR})
 
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glfw)
+
 find_package(GLEW REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE GLEW::GLEW)
 
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
 
-find_package(SDL2 CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME}
-    PRIVATE
-    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
-    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
-)
+find_package(fmt CONFIG REQUIRED)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE fmt::fmt)
 
-find_package(SDL2_image CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)
-
-set(TINYGLTF_HEADER_ONLY ON CACHE INTERNAL "" FORCE)
-set(TINYGLTF_INSTALL OFF CACHE INTERNAL "" FORCE)
+# set(TINYGLTF_HEADER_ONLY ON CACHE INTERNAL "" FORCE)
+# set(TINYGLTF_INSTALL OFF CACHE INTERNAL "" FORCE)
 
 find_path(TINYGLTF_INCLUDE_DIRS "tiny_gltf.h")
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${TINYGLTF_INCLUDE_DIRS})

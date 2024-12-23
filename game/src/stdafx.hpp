@@ -7,13 +7,11 @@
 #include <string_view>
 #include <array>
 #include <algorithm>
-#include <format>
 
-#define SDL_MAIN_HANDLED
+#include <fmt/format.h>
 
-#include <SDL2/SDL.h>
 #include <GL/glew.h>
-#include <SDL2/SDL_opengl.h>
+#include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

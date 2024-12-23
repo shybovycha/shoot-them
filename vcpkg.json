@@ -9,16 +9,12 @@
       "version>=": "2.2.0#4"
     },
     {
+      "name": "glfw3",
+      "version>=": "3.4#1"
+    },
+    {
       "name": "glm",
       "version>=": "0.9.9.8#2"
-    },
-    {
-      "name": "sdl2",
-      "version>=": "2.30.10"
-    },
-    {
-      "name": "sdl2-image",
-      "version>=": "2.8.2"
     },
     {
       "name": "fmt",
