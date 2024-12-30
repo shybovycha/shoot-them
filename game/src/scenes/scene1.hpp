@@ -5,7 +5,7 @@
 #include "../scene.hpp"
 #include "../shader.hpp"
 
-struct Vec3 {
+struct alignas(16) Vec3 {
     float x;
     float y;
     float z;

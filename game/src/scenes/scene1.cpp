@@ -65,7 +65,14 @@ Scene1::~Scene1()
 
 void Scene1::render(float dt)
 {
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1024 / (float) 768, 0.1f, 100.0f);
+
     triangleShader->setFloat("dt", dt);
+    triangleShader->setMat4("model", model);
+    triangleShader->setMat4("view", view);
+    triangleShader->setMat4("projection", projection);
     
     triangleShader->use();
 
