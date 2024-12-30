@@ -67,13 +67,20 @@ scene1::Scene1::~Scene1()
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
+void scene1::Scene1::handleKeyEvent(int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        std::cout << "[scene1] ESC pressed" << std::endl;
+    }
+}
+
 void scene1::Scene1::render(float dt)
 {
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
     // TODO: expose projection on a higher level maybe? or obtain actual window size?
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1024 / (float) 768, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) windowWidth / (float) windowHeight, 0.1f, 100.0f);
 
     triangleShader->setFloat("dt", dt);
     triangleShader->setMat4("model", model);

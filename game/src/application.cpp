@@ -48,6 +48,8 @@ Application::Application()
     
     glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) { static_cast<Application*>(glfwGetWindowUserPointer(w))->mouseButtonCallback(w, button, action, mods); });
 
+    glfwSetWindowSizeCallback(window, [](GLFWwindow* w, int width, int height) { static_cast<Application*>(glfwGetWindowUserPointer(w))->windowSizeCallback(w, width, height); });
+
     sceneManager = std::make_unique<SceneManager>();
 
     sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>());
@@ -66,10 +68,17 @@ Application::~Application()
 
 void Application::keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods)
 {
+    sceneManager->currentScene->handleKeyEvent(key, scancode, action, mods);
 }
 
 void Application::mouseButtonCallback(GLFWwindow* w, int button, int action, int mods)
 {
+    sceneManager->currentScene->handleMouseButtonEvent(button, action, mods);
+}
+
+void Application::windowSizeCallback(GLFWwindow* w, int width, int height)
+{
+    sceneManager->currentScene->handleWindowResizeEvent(width, height);
 }
 
 void Application::update()

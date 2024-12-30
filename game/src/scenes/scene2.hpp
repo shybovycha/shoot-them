@@ -15,6 +15,8 @@ namespace scene2
 
         ~Scene2();
 
+        void handleKeyEvent(int key, int scancode, int action, int mods);
+
         void render(float dt);
 
     private:

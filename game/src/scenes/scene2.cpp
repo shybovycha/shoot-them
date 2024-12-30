@@ -11,6 +11,14 @@ scene2::Scene2::~Scene2()
     std::cout << "cleaning up scene2" << std::endl;
 }
 
+void scene2::Scene2::handleKeyEvent(int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        std::cout << "[scene2] ESC pressed" << std::endl;
+    }
+}
+
 void scene2::Scene2::render(float dt)
 {
     glEnable(GL_DEPTH_TEST);
@@ -23,7 +31,7 @@ void scene2::Scene2::render(float dt)
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
     // TODO: expose projection on a higher level maybe? or obtain actual window size?
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1024 / (float) 768, 0.1f, 1000.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) windowWidth / (float) windowHeight, 0.1f, 1000.0f);
 
     modelShader->setFloat("dt", dt);
     modelShader->setMat4("model", model);

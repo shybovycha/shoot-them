@@ -36,6 +36,8 @@ namespace scene1
 
         void render(float dt);
 
+        void handleKeyEvent(int key, int scancode, int action, int mods);
+
     private:
         std::unique_ptr<Shader> triangleShader;
 

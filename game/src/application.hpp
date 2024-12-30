@@ -21,6 +21,8 @@ private:
 
     void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 
+    void windowSizeCallback(GLFWwindow* w, int width, int height);
+
 public:
     bool isRunning;
 
