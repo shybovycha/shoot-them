@@ -3,7 +3,7 @@
 scene2::Scene2::Scene2()
 {
     modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
-    model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/cube.glb");
+    model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
 }
 
 scene2::Scene2::~Scene2()
@@ -19,7 +19,7 @@ void scene2::Scene2::render(float dt)
 
     modelShader->use();
 
-    glm::mat4 model = glm::translate(glm::rotate(glm::mat4(1.0f), dt, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, -0.5f));
+    glm::mat4 model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.1f)), dt, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, -0.5f));
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
     // TODO: expose projection on a higher level maybe? or obtain actual window size?
