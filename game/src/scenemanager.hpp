@@ -3,15 +3,16 @@
 #include "stdafx.hpp"
 
 #include "scene.hpp"
+#include "scenes.hpp"
 
 class SceneManager
 {
 public:
-    void addScene(std::string name, std::unique_ptr<Scene> scene);
+    void addScene(SceneID id, std::unique_ptr<Scene> scene);
 
-    void setScene(std::string name);
+    void setScene(SceneID id);
 
 public:
-    std::map<std::string, std::unique_ptr<Scene>> scenes;
+    std::map<SceneID, std::unique_ptr<Scene>> scenes;
     Scene* currentScene;
 };

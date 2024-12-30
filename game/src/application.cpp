@@ -46,10 +46,10 @@ Application::Application()
 
     sceneManager = std::make_unique<SceneManager>();
 
-    sceneManager->addScene("scene1", std::make_unique<Scene1>());
-    sceneManager->addScene("scene2", std::make_unique<Scene2>());
+    sceneManager->addScene(SceneID::SCENE1, std::make_unique<Scene1>());
+    sceneManager->addScene(SceneID::SCENE2, std::make_unique<Scene2>());
 
-    sceneManager->setScene("scene1");
+    sceneManager->setScene(SceneID::SCENE2);
 
     isRunning = true;
 }

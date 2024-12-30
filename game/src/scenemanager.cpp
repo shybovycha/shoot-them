@@ -1,14 +1,14 @@
 #include "scenemanager.hpp"
 
-void SceneManager::addScene(std::string name, std::unique_ptr<Scene> scene)
+void SceneManager::addScene(SceneID id, std::unique_ptr<Scene> scene)
 {
-    scenes[name] = std::move(scene);
+    scenes[id] = std::move(scene);
 }
 
-void SceneManager::setScene(std::string name)
+void SceneManager::setScene(SceneID id)
 {
-    if (scenes.find(name) != scenes.end())
+    if (scenes.find(id) != scenes.end())
     {
-        currentScene = scenes[name].get();
+        currentScene = scenes[id].get();
     }
 }
