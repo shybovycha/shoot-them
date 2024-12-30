@@ -19,11 +19,11 @@ void scene2::Scene2::render(float dt)
 
     modelShader->use();
 
-    glm::mat4 model = glm::translate(glm::rotate(glm::scale(glm::mat4(1.0f), glm::vec3(0.1f)), dt, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, -0.5f));
+    glm::mat4 model = glm::translate(glm::rotate(glm::mat4(1.0f), dt, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, -0.5f));
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
     // TODO: expose projection on a higher level maybe? or obtain actual window size?
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1024 / (float) 768, 0.1f, 100.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1024 / (float) 768, 0.1f, 1000.0f);
 
     modelShader->setFloat("dt", dt);
     modelShader->setMat4("model", model);
