@@ -42,7 +42,11 @@ Application::Application()
 
     glfwSwapInterval(0);
 
-    // glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowUserPointer(window, this);
+
+    glfwSetKeyCallback(window, [](GLFWwindow* w, int key, int scancode, int action, int mods) { static_cast<Application*>(glfwGetWindowUserPointer(w))->keyCallback(w, key, scancode, action, mods); });
+    
+    glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) { static_cast<Application*>(glfwGetWindowUserPointer(w))->mouseButtonCallback(w, button, action, mods); });
 
     sceneManager = std::make_unique<SceneManager>();
 
@@ -58,6 +62,14 @@ Application::~Application()
 {
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+void Application::keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods)
+{
+}
+
+void Application::mouseButtonCallback(GLFWwindow* w, int button, int action, int mods)
+{
 }
 
 void Application::update()
