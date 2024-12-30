@@ -12,14 +12,14 @@
 
 #include "shader.hpp"
 
-struct ModelVertex
+struct alignas(16) ModelVertex
 {
     glm::vec3 position;
-    glm::vec2 texCoord;
     glm::vec3 normal;
+    glm::vec2 texCoord;
 };
 
-struct MaterialData
+struct alignas(16) MaterialData
 {
     glm::vec4 baseColorFactor;
     GLuint64 baseColorTexture;
@@ -29,7 +29,7 @@ struct MaterialData
     glm::vec2 padding;
 };
 
-struct MeshData
+struct alignas(16) MeshData
 {
     glm::mat4 transform;
     uint32_t materialIndex;
@@ -42,6 +42,7 @@ class GLTFModel
 {
 public:
     GLTFModel(std::string_view path);
+
     ~GLTFModel();
 
     void draw(std::shared_ptr<Shader> shader);
@@ -51,6 +52,9 @@ private:
     GLuint indexBuffer;
     GLuint materialBuffer;
     GLuint meshBuffer;
+    
+    GLuint vertexArrayObject;
+
     std::vector<GLuint64> textureHandles;
     std::vector<MeshData> meshes;
     std::vector<MaterialData> materials;

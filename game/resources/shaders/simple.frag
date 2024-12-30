@@ -40,5 +40,5 @@ void main() {
     
     // Output final color with transition alpha
     // fragColor = vec4(finalColor, baseColor.a * alpha);
-    fragColor = vec4(fragPos * dt, alpha);
+    fragColor = vec4(abs(fragPos), alpha);
 }

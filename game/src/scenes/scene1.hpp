@@ -45,7 +45,7 @@ private:
 
     std::vector<DrawCommand> drawCommands;
 
-    GLuint vertexAttributeObject;
+    GLuint vertexArrayObject;
     GLuint vertexBuffer;
     GLuint indexBuffer;
     GLuint meshBuffer;

@@ -47,14 +47,14 @@ GLTFModel::GLTFModel(std::string_view path)
                                 positions[i * 3 + 1],
                                 positions[i * 3 + 2]),
 
-                        .texCoord = glm::vec2(
-                                texcoords[i * 2],
-                                texcoords[i * 2 + 1]),
-
                         .normal = glm::vec3(
                                 normals[i * 3],
                                 normals[i * 3 + 1],
-                                normals[i * 3 + 2])};
+                                normals[i * 3 + 2]),
+                
+                        .texCoord = glm::vec2(
+                                        texcoords[i * 2],
+                                        texcoords[i * 2 + 1])};
 
                 vertices.push_back(vertex);
             }
@@ -184,12 +184,13 @@ GLTFModel::GLTFModel(std::string_view path)
     {
         for (const auto& primitive : mesh.primitives)
         {
-            MeshData meshData;
-            meshData.transform = glm::mat4(1.0f);// You might want to process node transforms here
-            meshData.materialIndex = primitive.material;
-            meshData.vertexOffset = currentVertexOffset;
-            meshData.indexOffset = currentIndexOffset;
-            meshData.indexCount = model.accessors[primitive.indices].count;
+            MeshData meshData {
+                .transform = glm::mat4(1.0f), // TODO: process node transforms here
+                .materialIndex = (uint32_t) primitive.material,
+                .vertexOffset = (uint32_t) currentVertexOffset,
+                .indexOffset = (uint32_t) currentIndexOffset,
+                .indexCount = (uint32_t) model.accessors[primitive.indices].count,
+            };
 
             currentVertexOffset += model.accessors[primitive.attributes.at("POSITION")].count;
             currentIndexOffset += meshData.indexCount;
@@ -202,6 +203,30 @@ GLTFModel::GLTFModel(std::string_view path)
     glCreateBuffers(1, &meshBuffer);
     glNamedBufferStorage(meshBuffer, meshes.size() * sizeof(MeshData),
                          meshes.data(), GL_DYNAMIC_STORAGE_BIT);
+
+    // Create VAO
+    glCreateVertexArrays(1, &vertexArrayObject);
+
+    // Set up vertex attributes
+    // glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
+
+    // Position
+    glEnableVertexArrayAttrib(vertexArrayObject, 0);
+    glVertexArrayAttribFormat(vertexArrayObject, 0, 3, GL_FLOAT, GL_FALSE,
+                              offsetof(ModelVertex, position));
+    glVertexArrayAttribBinding(vertexArrayObject, 0, 0);
+
+    // Normal
+    glEnableVertexArrayAttrib(vertexArrayObject, 1);
+    glVertexArrayAttribFormat(vertexArrayObject, 1, 3, GL_FLOAT, GL_FALSE,
+                              offsetof(ModelVertex, normal));
+    glVertexArrayAttribBinding(vertexArrayObject, 1, 0);
+
+    // TexCoord
+    glEnableVertexArrayAttrib(vertexArrayObject, 2);
+    glVertexArrayAttribFormat(vertexArrayObject, 2, 2, GL_FLOAT, GL_FALSE,
+                              offsetof(ModelVertex, texCoord));
+    glVertexArrayAttribBinding(vertexArrayObject, 2, 0);
 }
 
 GLTFModel::~GLTFModel()
@@ -210,6 +235,8 @@ GLTFModel::~GLTFModel()
     glDeleteBuffers(1, &indexBuffer);
     glDeleteBuffers(1, &materialBuffer);
     glDeleteBuffers(1, &meshBuffer);
+
+    glDeleteVertexArrays(1, &vertexArrayObject);
 
     for (GLuint64 handle : textureHandles)
     {
@@ -224,6 +251,9 @@ void GLTFModel::draw(std::shared_ptr<Shader> shader)
     // Bind SSBOs
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, materialBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, meshBuffer);
+
+    glBindVertexArray(vertexArrayObject);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
     // Draw all meshes
     glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,

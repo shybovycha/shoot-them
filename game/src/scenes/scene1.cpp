@@ -22,15 +22,13 @@ Scene1::Scene1()
                          indices.data(), GL_DYNAMIC_STORAGE_BIT);
 
     // Set up vertex attributes
-    glCreateVertexArrays(1, &vertexAttributeObject);
-    glVertexArrayVertexBuffer(vertexAttributeObject, 0, vertexBuffer, 0, sizeof(glm::vec3));
+    glCreateVertexArrays(1, &vertexArrayObject);
+    glVertexArrayVertexBuffer(vertexArrayObject, 0, vertexBuffer, 0, sizeof(glm::vec3));
 
     // Position
-    glEnableVertexArrayAttrib(vertexAttributeObject, 0);
-    glVertexArrayAttribFormat(vertexAttributeObject, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
-    glVertexArrayAttribBinding(vertexAttributeObject, 0, 0);
-
-    glVertexArrayElementBuffer(vertexAttributeObject, indexBuffer);
+    glEnableVertexArrayAttrib(vertexArrayObject, 0);
+    glVertexArrayAttribFormat(vertexArrayObject, 0, 3, GL_FLOAT, GL_FALSE, offsetof(Vertex, position));
+    glVertexArrayAttribBinding(vertexArrayObject, 0, 0);
 
     meshes.push_back(
             MeshData{.transform = glm::mat4(1.0f),
@@ -61,6 +59,12 @@ Scene1::Scene1()
 Scene1::~Scene1()
 {
     std::cout << "cleaning up scene1" << std::endl;
+
+    glDeleteBuffers(1, &drawCommandBuffer);
+    glDeleteBuffers(1, &meshBuffer);
+    glDeleteBuffers(1, &indexBuffer);
+    glDeleteBuffers(1, &vertexBuffer);
+    glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
 void Scene1::render(float dt)
@@ -83,7 +87,7 @@ void Scene1::render(float dt)
     // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, materialBuffer);// Materials
 
     // Bind VAO
-    glBindVertexArray(vertexAttributeObject);
+    glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
     // Bind indirect command buffer
