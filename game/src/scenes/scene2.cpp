@@ -1,14 +1,36 @@
 #include "scene2.hpp"
 
-Scene2::Scene2()
+scene2::Scene2::Scene2()
 {
+    modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
+    model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/cube.glb");
 }
 
-Scene2::~Scene2()
+scene2::Scene2::~Scene2()
 {
     std::cout << "cleaning up scene2" << std::endl;
 }
 
-void Scene2::render(float dt)
+void scene2::Scene2::render(float dt)
 {
+    glEnable(GL_DEPTH_TEST);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    modelShader->use();
+
+    glm::mat4 model = glm::translate(glm::rotate(glm::mat4(1.0f), dt, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, -0.5f));
+    glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
+
+    // TODO: expose projection on a higher level maybe? or obtain actual window size?
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) 1024 / (float) 768, 0.1f, 100.0f);
+
+    modelShader->setFloat("dt", dt);
+    modelShader->setMat4("model", model);
+    modelShader->setMat4("view", view);
+    modelShader->setMat4("projection", projection);
+
+    model3d->render();
+
+    glDisable(GL_DEPTH_TEST);
 }

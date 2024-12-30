@@ -1,12 +1,20 @@
 #include "gltfmodel.hpp"
 
-GLTFModel::GLTFModel(std::string_view path)
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STBI_MSC_SECURE_CRT
+#define TINYGLTF_USE_CPP14
+
+#include <tiny_gltf.h>
+
+gltfmodel::GLTFModel::GLTFModel(std::string_view path)
 {
     tinygltf::Model model;
     tinygltf::TinyGLTF loader;
     std::string err, warn;
 
-    bool ret = loader.LoadASCIIFromFile(&model, &err, &warn, std::string(path.data()));
+    bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, std::string(path.data()));
 
     if (!ret)
     {
@@ -192,10 +200,17 @@ GLTFModel::GLTFModel(std::string_view path)
                 .indexCount = (uint32_t) model.accessors[primitive.indices].count,
             };
 
-            currentVertexOffset += model.accessors[primitive.attributes.at("POSITION")].count;
-            currentIndexOffset += meshData.indexCount;
+            DrawCommand drawCommand {.count = meshData.indexCount,
+                                     .instanceCount = 1,
+                                     .firstIndex = (uint32_t) currentIndexOffset,
+                                     .baseVertex = (int32_t) currentVertexOffset,
+                                     .baseInstance = (uint32_t) meshes.size()};
 
             meshes.push_back(meshData);
+            drawCommands.push_back(drawCommand);
+
+            currentVertexOffset += model.accessors[primitive.attributes.at("POSITION")].count;
+            currentIndexOffset += meshData.indexCount;
         }
     }
 
@@ -206,9 +221,6 @@ GLTFModel::GLTFModel(std::string_view path)
 
     // Create VAO
     glCreateVertexArrays(1, &vertexArrayObject);
-
-    // Set up vertex attributes
-    // glVertexArrayVertexBuffer(vao, 0, vbo, 0, sizeof(Vertex));
 
     // Position
     glEnableVertexArrayAttrib(vertexArrayObject, 0);
@@ -227,14 +239,26 @@ GLTFModel::GLTFModel(std::string_view path)
     glVertexArrayAttribFormat(vertexArrayObject, 2, 2, GL_FLOAT, GL_FALSE,
                               offsetof(ModelVertex, texCoord));
     glVertexArrayAttribBinding(vertexArrayObject, 2, 0);
+
+    glVertexArrayVertexBuffer(vertexArrayObject, 0, vertexBuffer, 0, sizeof(ModelVertex));
+    
+    glVertexArrayElementBuffer(vertexArrayObject, indexBuffer);
+
+    // Create and fill draw command buffer
+    glCreateBuffers(1, &drawCommandBuffer);
+    glNamedBufferStorage(drawCommandBuffer,
+                         drawCommands.size() * sizeof(DrawCommand),
+                         drawCommands.data(),
+                         GL_DYNAMIC_STORAGE_BIT);
 }
 
-GLTFModel::~GLTFModel()
+gltfmodel::GLTFModel::~GLTFModel()
 {
     glDeleteBuffers(1, &vertexBuffer);
     glDeleteBuffers(1, &indexBuffer);
     glDeleteBuffers(1, &materialBuffer);
     glDeleteBuffers(1, &meshBuffer);
+    glDeleteBuffers(1, &drawCommandBuffer);
 
     glDeleteVertexArrays(1, &vertexArrayObject);
 
@@ -244,18 +268,24 @@ GLTFModel::~GLTFModel()
     }
 }
 
-void GLTFModel::draw(std::shared_ptr<Shader> shader)
+void gltfmodel::GLTFModel::render()
 {
-    shader->use();
-
     // Bind SSBOs
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, materialBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, meshBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, meshBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialBuffer);
 
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-    // Draw all meshes
-    glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr,
-                                meshes.size(), sizeof(MeshData));
+    // Bind indirect command buffer
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, drawCommandBuffer);
+
+    // Draw all meshes with a single draw call
+    glMultiDrawElementsIndirect(
+            GL_TRIANGLES,
+            GL_UNSIGNED_INT,
+            nullptr,            // Offset into command buffer
+            drawCommands.size(),// Number of commands
+            0                   // Stride (0 means tightly packed)
+    );
 }

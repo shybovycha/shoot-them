@@ -13,8 +13,6 @@ struct Mesh {
 
 struct Vertex {
     vec3 position;
-    // vec3 normal;
-    // vec2 texCoord;
 };
 
 layout(std430, binding = 0) readonly buffer VertexBuffer {
@@ -35,7 +33,6 @@ uniform mat4 projection;
 out vec3 fragPos;
 out vec2 texCoord;
 out vec3 normal;
-// out flat uint materialID;
 
 void main() {
     // Get mesh data for this instance
@@ -51,12 +48,6 @@ void main() {
     vec4 worldPos = mesh.transform * vec4(vertex.position, 1.0);
     gl_Position = projection * view * worldPos;
     
-    // Calculate normal
-    // mat3 normalMatrix = transpose(inverse(mat3(mesh.transform)));
-    // normal = normalize(normalMatrix * vertex.normal);
-    
     // Pass through other vertex data
     fragPos = worldPos.xyz;
-    // texCoord = vertex.texCoord;
-    // materialIndex = mesh.materialIndex;
 }

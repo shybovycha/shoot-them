@@ -46,8 +46,8 @@ Application::Application()
 
     sceneManager = std::make_unique<SceneManager>();
 
-    sceneManager->addScene(SceneID::SCENE1, std::make_unique<Scene1>());
-    sceneManager->addScene(SceneID::SCENE2, std::make_unique<Scene2>());
+    sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>());
+    sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>());
 
     sceneManager->setScene(SceneID::SCENE2);
 

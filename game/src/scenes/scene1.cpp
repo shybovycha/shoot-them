@@ -1,6 +1,6 @@
 #include "scene1.hpp"
 
-Scene1::Scene1()
+scene1::Scene1::Scene1()
 {
     triangleShader = std::make_unique<Shader>("resources/shaders/simple.vert", "resources/shaders/simple.frag");
 
@@ -56,7 +56,7 @@ Scene1::Scene1()
                          GL_DYNAMIC_STORAGE_BIT);
 }
 
-Scene1::~Scene1()
+scene1::Scene1::~Scene1()
 {
     std::cout << "cleaning up scene1" << std::endl;
 
@@ -67,7 +67,7 @@ Scene1::~Scene1()
     glDeleteVertexArrays(1, &vertexArrayObject);
 }
 
-void Scene1::render(float dt)
+void scene1::Scene1::render(float dt)
 {
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));

@@ -5,49 +5,50 @@
 #include "../scene.hpp"
 #include "../shader.hpp"
 
-struct alignas(16) Vertex {
-    glm::vec3 position;
-    // glm::vec3 normal;
-    // glm::vec2 texCoord;
-};
-
-struct DrawCommand {
-    uint32_t count;
-    uint32_t instanceCount;
-    uint32_t firstIndex;
-    int32_t baseVertex;
-    uint32_t baseInstance;
-};
-
-struct MeshData {
-    glm::mat4 transform;
-    uint32_t materialIndex;
-    uint32_t vertexOffset;
-    uint32_t indexOffset;
-    uint32_t indexCount;
-};
-
-class Scene1 : public Scene
+namespace scene1
 {
-public:
-    Scene1();
+    struct alignas(16) Vertex {
+        glm::vec3 position;
+    };
 
-    ~Scene1();
+    struct DrawCommand {
+        uint32_t count;
+        uint32_t instanceCount;
+        uint32_t firstIndex;
+        int32_t baseVertex;
+        uint32_t baseInstance;
+    };
 
-    void render(float dt);
+    struct MeshData {
+        glm::mat4 transform;
+        uint32_t materialIndex;
+        uint32_t vertexOffset;
+        uint32_t indexOffset;
+        uint32_t indexCount;
+    };
 
-private:
-    std::unique_ptr<Shader> triangleShader;
+    class Scene1 : public Scene
+    {
+    public:
+        Scene1();
 
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
-    std::vector<MeshData> meshes;
+        ~Scene1();
 
-    std::vector<DrawCommand> drawCommands;
+        void render(float dt);
 
-    GLuint vertexArrayObject;
-    GLuint vertexBuffer;
-    GLuint indexBuffer;
-    GLuint meshBuffer;
-    GLuint drawCommandBuffer;
-};
+    private:
+        std::unique_ptr<Shader> triangleShader;
+
+        std::vector<Vertex> vertices;
+        std::vector<uint32_t> indices;
+        std::vector<MeshData> meshes;
+
+        std::vector<DrawCommand> drawCommands;
+
+        GLuint vertexArrayObject;
+        GLuint vertexBuffer;
+        GLuint indexBuffer;
+        GLuint meshBuffer;
+        GLuint drawCommandBuffer;
+    };
+}// namespace scene1;

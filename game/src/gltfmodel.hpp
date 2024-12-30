@@ -1,61 +1,65 @@
 #pragma once
 
-#define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STBI_MSC_SECURE_CRT
-#define TINYGLTF_USE_CPP14
-
-#include <tiny_gltf.h>
-
 #include "stdafx.hpp"
 
 #include "shader.hpp"
 
-struct alignas(16) ModelVertex
+namespace gltfmodel
 {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texCoord;
-};
+    struct alignas(16) ModelVertex {
+        glm::vec3 position;
+        glm::vec3 normal;
+        glm::vec2 texCoord;
+    };
 
-struct alignas(16) MaterialData
-{
-    glm::vec4 baseColorFactor;
-    GLuint64 baseColorTexture;
-    GLuint64 normalTexture;
-    float metallicFactor;
-    float roughnessFactor;
-    glm::vec2 padding;
-};
+    struct alignas(16) MaterialData {
+        glm::vec4 baseColorFactor;
+        GLuint64 baseColorTexture;
+        GLuint64 normalTexture;
+        float metallicFactor;
+        float roughnessFactor;
+        glm::vec2 padding;
+    };
 
-struct alignas(16) MeshData
-{
-    glm::mat4 transform;
-    uint32_t materialIndex;
-    uint32_t vertexOffset;
-    uint32_t indexOffset;
-    uint32_t indexCount;
-};
+    struct alignas(16) MeshData {
+        glm::mat4 transform;
+        uint32_t materialIndex;
+        uint32_t vertexOffset;
+        uint32_t indexOffset;
+        uint32_t indexCount;
+    };
 
-class GLTFModel
-{
-public:
-    GLTFModel(std::string_view path);
+    struct DrawCommand {
+        uint32_t count;
+        uint32_t instanceCount;
+        uint32_t firstIndex;
+        int32_t baseVertex;
+        uint32_t baseInstance;
+    };
 
-    ~GLTFModel();
+    class GLTFModel
+    {
+    public:
+        GLTFModel(std::string_view path);
 
-    void draw(std::shared_ptr<Shader> shader);
+        ~GLTFModel();
 
-private:
-    GLuint vertexBuffer;
-    GLuint indexBuffer;
-    GLuint materialBuffer;
-    GLuint meshBuffer;
-    
-    GLuint vertexArrayObject;
+        // void render(std::shared_ptr<Shader> shader);
+        void render();
 
-    std::vector<GLuint64> textureHandles;
-    std::vector<MeshData> meshes;
-    std::vector<MaterialData> materials;
-};
+    private:
+        GLuint vertexBuffer;
+        GLuint indexBuffer;
+        GLuint materialBuffer;
+        GLuint meshBuffer;
+
+        GLuint drawCommandBuffer;
+
+        GLuint vertexArrayObject;
+
+        std::vector<GLuint64> textureHandles;
+        std::vector<MeshData> meshes;
+        std::vector<MaterialData> materials;
+        std::vector<DrawCommand> drawCommands;
+    };
+}// namespace gltfmodel
