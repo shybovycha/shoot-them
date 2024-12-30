@@ -42,6 +42,8 @@ Application::Application()
 
     glfwSwapInterval(0);
 
+    glfwSetCursorPos(window, WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f);
+
     glfwSetWindowUserPointer(window, this);
 
     glfwSetKeyCallback(window, [](GLFWwindow* w, int key, int scancode, int action, int mods) { static_cast<Application*>(glfwGetWindowUserPointer(w))->keyCallback(w, key, scancode, action, mods); });
@@ -50,12 +52,16 @@ Application::Application()
 
     glfwSetWindowSizeCallback(window, [](GLFWwindow* w, int width, int height) { static_cast<Application*>(glfwGetWindowUserPointer(w))->windowSizeCallback(w, width, height); });
 
+    glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) { static_cast<Application*>(glfwGetWindowUserPointer(w))->cursorPositionCallback(w, x, y); });
+
     sceneManager = std::make_unique<SceneManager>();
 
     sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>());
     sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>());
 
     sceneManager->setScene(SceneID::SCENE2);
+
+    sceneManager->currentScene->handleWindowResizeEvent(WINDOW_WIDTH, WINDOW_HEIGHT);
 
     isRunning = true;
 }
@@ -79,6 +85,11 @@ void Application::mouseButtonCallback(GLFWwindow* w, int button, int action, int
 void Application::windowSizeCallback(GLFWwindow* w, int width, int height)
 {
     sceneManager->currentScene->handleWindowResizeEvent(width, height);
+}
+
+void Application::cursorPositionCallback(GLFWwindow* w, double x, double y)
+{
+    sceneManager->currentScene->handleCursorPositionEvent(w, x, y);
 }
 
 void Application::update()

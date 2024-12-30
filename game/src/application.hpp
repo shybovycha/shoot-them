@@ -23,6 +23,8 @@ private:
 
     void windowSizeCallback(GLFWwindow* w, int width, int height);
 
+    void cursorPositionCallback(GLFWwindow* w, double x, double y);
+
 public:
     bool isRunning;
 

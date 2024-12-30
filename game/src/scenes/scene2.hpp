@@ -17,10 +17,18 @@ namespace scene2
 
         void handleKeyEvent(int key, int scancode, int action, int mods);
 
+        void handleCursorPositionEvent(GLFWwindow* w, double x, double y);
+
         void render(float dt);
 
     private:
         std::unique_ptr<Shader> modelShader;
         std::unique_ptr<gltfmodel::GLTFModel> model3d;
+
+        glm::vec3 cameraUp;
+        glm::vec3 cameraLookAt;
+        glm::vec3 cameraRight;
+
+        float fov;
     };
 }// namespace scene2

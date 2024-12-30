@@ -33,11 +33,10 @@ void main() {
     // Get mesh data for this instance
     Mesh mesh = meshes[gl_BaseInstance];
 
-    gl_Position = projection * view * model * vec4(inPosition, 1.0);
+    gl_Position = projection * view * mesh.transform * vec4(inPosition, 1.0);
     fragPos = vec3(model * vec4(inPosition, 1.0));
-    // normal = mat3(transpose(inverse(mesh.transform))) * inNormal;
-    
-    normal = mat3(transpose(inverse(model))) * inNormal;
+    normal = mat3(transpose(inverse(mesh.transform))) * inNormal;
+
     texCoord = inTexCoord;
     materialIndex = mesh.materialIndex;
 }

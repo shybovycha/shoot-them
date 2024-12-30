@@ -19,6 +19,10 @@ public:
     {
     }
 
+    virtual void handleCursorPositionEvent(GLFWwindow* w, double x, double y)
+    {
+    }
+
     virtual void render(float dt) = 0;
 
 protected:
