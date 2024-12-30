@@ -5,14 +5,8 @@
 #include "../scene.hpp"
 #include "../shader.hpp"
 
-struct alignas(16) Vec3 {
-    float x;
-    float y;
-    float z;
-};
-
-struct Vertex {
-    Vec3 position;
+struct alignas(16) Vertex {
+    glm::vec3 position;
     // glm::vec3 normal;
     // glm::vec2 texCoord;
 };

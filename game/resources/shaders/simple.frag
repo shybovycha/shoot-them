@@ -42,16 +42,3 @@ void main() {
     // fragColor = vec4(finalColor, baseColor.a * alpha);
     fragColor = vec4(fragPos * dt, alpha);
 }
-
-/*
-#version 330 core
-
-layout(location = 0) out vec4 diffuseColor;
-
-in vec4 vertexColor;
-
-void main()
-{
-    diffuseColor = vertexColor;
-}
-*/

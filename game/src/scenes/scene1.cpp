@@ -23,7 +23,7 @@ Scene1::Scene1()
 
     // Set up vertex attributes
     glCreateVertexArrays(1, &vertexAttributeObject);
-    glVertexArrayVertexBuffer(vertexAttributeObject, 0, vertexBuffer, 0, sizeof(Vec3));
+    glVertexArrayVertexBuffer(vertexAttributeObject, 0, vertexBuffer, 0, sizeof(glm::vec3));
 
     // Position
     glEnableVertexArrayAttrib(vertexAttributeObject, 0);
