@@ -6,8 +6,11 @@ scene2::Scene2::Scene2()
     model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
 
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    cameraRight = glm::vec3(1.0f, 0.0f, 0.0f);
-    cameraLookAt = glm::vec3(0.0f, 0.0f, -1.0f);
+
+    glm::vec3 cameraForward(0.0f, 0.0f, -1.0f);
+    cameraPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    cameraOrientation = glm::lookAtRH(cameraPosition, cameraForward, cameraUp);
 
     fov = 45.0f;
 }
@@ -27,17 +30,19 @@ void scene2::Scene2::handleKeyEvent(int key, int scancode, int action, int mods)
 
 void scene2::Scene2::handleCursorPositionEvent(GLFWwindow* w, double x, double y)
 {
-    const float cameraRotationSpeed = 0.01f;
+    const float cameraRotationSpeed = 1.f;
 
-    glm::vec2 mouseDelta((x - (windowWidth / 2)), (y - (windowHeight / 2)));
+    glm::vec2 mouseDelta = glm::vec2(x, y) - (glm::vec2(windowWidth, windowHeight) * 0.5f);
 
-    float horizontalAngle = (mouseDelta.x / static_cast<float>(windowWidth)) * 1 * cameraRotationSpeed * fov;
-    float verticalAngle = (mouseDelta.y / static_cast<float>(windowHeight)) * -1 * cameraRotationSpeed * fov;
+    glm::quat deltaQuat = glm::quat(glm::vec3(mouseDelta.y / windowWidth, mouseDelta.x / windowHeight, 0.0f) * cameraRotationSpeed);
 
-    cameraLookAt = glm::rotate(cameraLookAt, horizontalAngle, cameraUp);
-    cameraLookAt = glm::rotate(cameraLookAt, verticalAngle, cameraRight);
+    cameraOrientation = glm::normalize(deltaQuat * cameraOrientation);
 
-    cameraRight = glm::normalize(glm::rotate(cameraRight, horizontalAngle, cameraUp));
+    glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
+
+    cameraOrientation = glm::lookAtRH(cameraPosition, cameraPosition - forward, cameraUp);
 
     glfwSetCursorPos(w, (windowWidth / 2.0f), (windowHeight / 2.0f));
 }
@@ -50,8 +55,7 @@ void scene2::Scene2::render(float dt)
 
     modelShader->use();
 
-    // glm::mat4 model = glm::translate(glm::rotate(glm::mat4(1.0f), dt, glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.0f, 0.0f, -0.5f));
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -3.0f), cameraLookAt, cameraUp);
+    glm::mat4 view = glm::mat4_cast(cameraOrientation)  * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
 
     // TODO: expose projection on a higher level maybe? or obtain actual window size?
     glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowWidth / (float) windowHeight, 0.1f, 1000.0f);

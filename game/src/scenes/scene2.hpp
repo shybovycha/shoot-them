@@ -26,8 +26,9 @@ namespace scene2
         std::unique_ptr<gltfmodel::GLTFModel> model3d;
 
         glm::vec3 cameraUp;
-        glm::vec3 cameraLookAt;
-        glm::vec3 cameraRight;
+        glm::vec3 cameraForward;
+        glm::vec3 cameraPosition;
+        glm::quat cameraOrientation;
 
         float fov;
     };
