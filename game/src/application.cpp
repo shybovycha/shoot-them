@@ -8,7 +8,10 @@ Application::Application()
 
     sceneManager = std::make_unique<SceneManager>();
 
-    initScenes();
+    sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>(windowManager.get()));
+    sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>(windowManager.get()));
+
+    sceneManager->setScene(SceneID::SCENE2);
 
     isRunning = true;
 }
@@ -67,14 +70,6 @@ void Application::initWindow()
     glfwSetWindowSizeCallback(window, [](GLFWwindow* w, int width, int height) { static_cast<Application*>(glfwGetWindowUserPointer(w))->windowSizeCallback(w, width, height); });
 
     glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) { static_cast<Application*>(glfwGetWindowUserPointer(w))->cursorPositionCallback(w, x, y); });
-}
-
-void Application::initScenes()
-{
-    sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>(windowManager.get()));
-    sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>(windowManager.get()));
-
-    sceneManager->setScene(SceneID::SCENE2);
 }
 
 void Application::keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods)
