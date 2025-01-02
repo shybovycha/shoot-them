@@ -4,31 +4,12 @@
 
 #include "../scene.hpp"
 #include "../shader.hpp"
+#include "../gltfmodel.hpp"
 #include "../windowmanager.hpp"
 #include "../scenemanager.hpp"
 
 namespace scene1
 {
-    struct alignas(16) Vertex {
-        glm::vec3 position;
-    };
-
-    struct DrawCommand {
-        uint32_t count;
-        uint32_t instanceCount;
-        uint32_t firstIndex;
-        int32_t baseVertex;
-        uint32_t baseInstance;
-    };
-
-    struct MeshData {
-        glm::mat4 transform;
-        uint32_t materialIndex;
-        uint32_t vertexOffset;
-        uint32_t indexOffset;
-        uint32_t indexCount;
-    };
-
     class Scene1 : public Scene
     {
     public:
@@ -38,21 +19,18 @@ namespace scene1
 
         void handleKeyEvent(int key, int scancode, int action, int mods) override;
 
+        void handleCursorPositionEvent(double x, double y) override;
+
         void render(float dt) override;
 
     private:
-        std::unique_ptr<Shader> triangleShader;
+        std::unique_ptr<Shader> modelShader;
+        std::unique_ptr<gltfmodel::GLTFModel> model3d;
 
-        std::vector<Vertex> vertices;
-        std::vector<uint32_t> indices;
-        std::vector<MeshData> meshes;
+        glm::vec3 cameraUp;
+        glm::vec3 cameraPosition;
+        glm::quat cameraOrientation;
 
-        std::vector<DrawCommand> drawCommands;
-
-        GLuint vertexArrayObject;
-        GLuint vertexBuffer;
-        GLuint indexBuffer;
-        GLuint meshBuffer;
-        GLuint drawCommandBuffer;
+        float fov;
     };
-}// namespace scene1;
+}// namespace scene2
