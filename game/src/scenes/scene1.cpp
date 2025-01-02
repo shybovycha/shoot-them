@@ -73,6 +73,10 @@ void scene1::Scene1::handleKeyEvent(int key, int scancode, int action, int mods)
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         std::cout << "[scene1] ESC pressed" << std::endl;
     }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        sceneManager->setScene(SceneID::SCENE2);
+    }
 }
 
 void scene1::Scene1::render(float dt)

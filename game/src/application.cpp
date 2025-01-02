@@ -11,7 +11,7 @@ Application::Application()
     sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>(windowManager.get(), sceneManager.get()));
     sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>(windowManager.get(), sceneManager.get()));
 
-    sceneManager->setScene(SceneID::SCENE2);
+    sceneManager->setScene(SceneID::SCENE1);
 
     isRunning = true;
 }

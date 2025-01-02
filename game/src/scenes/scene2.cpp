@@ -27,6 +27,11 @@ void scene2::Scene2::handleKeyEvent(int key, int scancode, int action, int mods)
     {
         std::cout << "[scene2] ESC pressed" << std::endl;
     }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    {
+        sceneManager->setScene(SceneID::SCENE1);
+    }
 }
 
 void scene2::Scene2::handleCursorPositionEvent(double x, double y)
