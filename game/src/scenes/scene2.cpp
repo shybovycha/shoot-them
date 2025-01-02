@@ -69,8 +69,10 @@ void scene2::Scene2::render(float dt)
 
     glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
+    glm::mat4 modelMatrix = glm::mat4(1.0f); // TODO: change this for each model
+
     modelShader->setFloat("dt", dt);
-    // modelShader->setMat4("model", model);
+    modelShader->setMat4("model", modelMatrix);
     modelShader->setMat4("view", view);
     modelShader->setMat4("projection", projection);
 
