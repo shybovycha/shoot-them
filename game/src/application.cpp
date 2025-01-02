@@ -7,6 +7,25 @@ void errorCallback(int error, const char* description)
 
 Application::Application()
 {
+    initWindow();
+
+    initScenes();
+
+    windowManager = std::make_unique<WindowManager>(window);
+
+    sceneManager = std::make_unique<SceneManager>();
+
+    isRunning = true;
+}
+
+Application::~Application()
+{
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+void Application::initWindow()
+{
     if (!glfwInit())
     {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -47,31 +66,20 @@ Application::Application()
     glfwSetWindowUserPointer(window, this);
 
     glfwSetKeyCallback(window, [](GLFWwindow* w, int key, int scancode, int action, int mods) { static_cast<Application*>(glfwGetWindowUserPointer(w))->keyCallback(w, key, scancode, action, mods); });
-    
+
     glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int button, int action, int mods) { static_cast<Application*>(glfwGetWindowUserPointer(w))->mouseButtonCallback(w, button, action, mods); });
 
     glfwSetWindowSizeCallback(window, [](GLFWwindow* w, int width, int height) { static_cast<Application*>(glfwGetWindowUserPointer(w))->windowSizeCallback(w, width, height); });
 
     glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) { static_cast<Application*>(glfwGetWindowUserPointer(w))->cursorPositionCallback(w, x, y); });
+}
 
-    windowManager = std::make_unique<WindowManager>(window);
-
-    sceneManager = std::make_unique<SceneManager>();
-
+void Application::initScenes()
+{
     sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>(windowManager.get()));
     sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>(windowManager.get()));
 
     sceneManager->setScene(SceneID::SCENE2);
-
-    sceneManager->currentScene->handleWindowResizeEvent(WINDOW_WIDTH, WINDOW_HEIGHT);
-
-    isRunning = true;
-}
-
-Application::~Application()
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
 }
 
 void Application::keyCallback(GLFWwindow* w, int key, int scancode, int action, int mods)

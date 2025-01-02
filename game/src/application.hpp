@@ -18,6 +18,9 @@ public:
     Application& operator=(const Application&) = delete;
 
 private:
+    void initWindow();
+    void initScenes();
+
     void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
