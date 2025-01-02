@@ -1,7 +1,7 @@
 #include "scene2.hpp"
 
-scene2::Scene2::Scene2(WindowManager* windowManager)
-    : windowManager(windowManager)
+scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
+    : Scene(windowManager, sceneManager)
 {
     modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
     model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");

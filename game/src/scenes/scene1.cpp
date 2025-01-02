@@ -1,7 +1,7 @@
 #include "scene1.hpp"
 
-scene1::Scene1::Scene1(WindowManager* windowManager)
-    : windowManager(windowManager)
+scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
+    : Scene(windowManager, sceneManager)
 {
     triangleShader = std::make_unique<Shader>("resources/shaders/simple.vert", "resources/shaders/simple.frag");
 

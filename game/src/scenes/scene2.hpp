@@ -6,13 +6,14 @@
 #include "../shader.hpp"
 #include "../gltfmodel.hpp"
 #include "../windowmanager.hpp"
+#include "../scenemanager.hpp"
 
 namespace scene2
 {
     class Scene2 : public Scene
     {
     public:
-        Scene2(WindowManager* windowManager);
+        Scene2(WindowManager* windowManager, SceneManager* sceneManager);
 
         ~Scene2();
 
@@ -23,8 +24,6 @@ namespace scene2
         void render(float dt) override;
 
     private:
-        WindowManager* windowManager;
-
         std::unique_ptr<Shader> modelShader;
         std::unique_ptr<gltfmodel::GLTFModel> model3d;
 

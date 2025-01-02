@@ -1,8 +1,17 @@
 #pragma once
 
+class WindowManager;
+class SceneManager;
+
 class Scene
 {
 public:
+    Scene(WindowManager* windowManager, SceneManager* sceneManager)
+        : windowManager(windowManager),
+          sceneManager(sceneManager)
+    {
+    }
+
     virtual ~Scene() = default;
 
     virtual void handleWindowResizeEvent(uint32_t width, uint32_t height)
@@ -22,4 +31,8 @@ public:
     }
 
     virtual void render(float dt) = 0;
+
+protected:
+    WindowManager* windowManager;
+    SceneManager* sceneManager;
 };

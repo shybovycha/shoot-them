@@ -5,6 +5,7 @@
 #include "../scene.hpp"
 #include "../shader.hpp"
 #include "../windowmanager.hpp"
+#include "../scenemanager.hpp"
 
 namespace scene1
 {
@@ -31,7 +32,7 @@ namespace scene1
     class Scene1 : public Scene
     {
     public:
-        Scene1(WindowManager* windowManager);
+        Scene1(WindowManager* windowManager, SceneManager* sceneManager);
 
         ~Scene1();
 
@@ -40,8 +41,6 @@ namespace scene1
         void render(float dt) override;
 
     private:
-        WindowManager* windowManager;
-
         std::unique_ptr<Shader> triangleShader;
 
         std::vector<Vertex> vertices;
