@@ -1,10 +1,5 @@
 #include "application.hpp"
 
-void errorCallback(int error, const char* description)
-{
-    std::cerr << "GLFW error:" << description << std::endl;
-}
-
 Application::Application()
 {
     initWindow();
@@ -32,7 +27,7 @@ void Application::initWindow()
         throw std::runtime_error("Initialization failed");
     }
 
-    glfwSetErrorCallback(errorCallback);
+    glfwSetErrorCallback([](int error, const char* description) { std::cerr << "GLFW error:" << description << std::endl; });
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
