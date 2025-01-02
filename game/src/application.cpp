@@ -4,11 +4,11 @@ Application::Application()
 {
     initWindow();
 
-    initScenes();
-
     windowManager = std::make_unique<WindowManager>(window);
 
     sceneManager = std::make_unique<SceneManager>();
+
+    initScenes();
 
     isRunning = true;
 }
