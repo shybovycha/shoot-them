@@ -1,6 +1,7 @@
 #include "scene2.hpp"
 
-scene2::Scene2::Scene2()
+scene2::Scene2::Scene2(WindowManager* windowManager)
+    : windowManager(windowManager)
 {
     modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
     model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
@@ -28,13 +29,15 @@ void scene2::Scene2::handleKeyEvent(int key, int scancode, int action, int mods)
     }
 }
 
-void scene2::Scene2::handleCursorPositionEvent(GLFWwindow* w, double x, double y)
+void scene2::Scene2::handleCursorPositionEvent(double x, double y)
 {
     const float cameraRotationSpeed = 1.f;
 
-    glm::vec2 mouseDelta = glm::vec2(x, y) - (glm::vec2(windowWidth, windowHeight) * 0.5f);
+    glm::vec2 windowSize = windowManager->getWindowSize();
 
-    glm::quat deltaQuat = glm::quat(glm::vec3(mouseDelta.y / windowWidth, mouseDelta.x / windowHeight, 0.0f) * cameraRotationSpeed);
+    glm::vec2 mouseDelta = glm::vec2(x, y) - (windowSize * 0.5f);
+
+    glm::quat deltaQuat = glm::quat(glm::vec3(mouseDelta.y / windowSize.x, mouseDelta.x / windowSize.y, 0.0f) * cameraRotationSpeed);
 
     cameraOrientation = glm::normalize(deltaQuat * cameraOrientation);
 
@@ -44,7 +47,7 @@ void scene2::Scene2::handleCursorPositionEvent(GLFWwindow* w, double x, double y
 
     cameraOrientation = glm::lookAtRH(cameraPosition, cameraPosition - forward, cameraUp);
 
-    glfwSetCursorPos(w, (windowWidth / 2.0f), (windowHeight / 2.0f));
+    windowManager->setCursorPosition(windowSize * 0.5f);
 }
 
 void scene2::Scene2::render(float dt)
@@ -57,8 +60,9 @@ void scene2::Scene2::render(float dt)
 
     glm::mat4 view = glm::mat4_cast(cameraOrientation)  * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
 
-    // TODO: expose projection on a higher level maybe? or obtain actual window size?
-    glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowWidth / (float) windowHeight, 0.1f, 1000.0f);
+    glm::vec2 windowSize = windowManager->getWindowSize();
+
+    glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
     modelShader->setFloat("dt", dt);
     // modelShader->setMat4("model", model);

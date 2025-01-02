@@ -54,10 +54,12 @@ Application::Application()
 
     glfwSetCursorPosCallback(window, [](GLFWwindow* w, double x, double y) { static_cast<Application*>(glfwGetWindowUserPointer(w))->cursorPositionCallback(w, x, y); });
 
+    windowManager = std::make_unique<WindowManager>(window);
+
     sceneManager = std::make_unique<SceneManager>();
 
-    sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>());
-    sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>());
+    sceneManager->addScene(SceneID::SCENE1, std::make_unique<scene1::Scene1>(windowManager.get()));
+    sceneManager->addScene(SceneID::SCENE2, std::make_unique<scene2::Scene2>(windowManager.get()));
 
     sceneManager->setScene(SceneID::SCENE2);
 
@@ -89,7 +91,7 @@ void Application::windowSizeCallback(GLFWwindow* w, int width, int height)
 
 void Application::cursorPositionCallback(GLFWwindow* w, double x, double y)
 {
-    sceneManager->currentScene->handleCursorPositionEvent(w, x, y);
+    sceneManager->currentScene->handleCursorPositionEvent(x, y);
 }
 
 void Application::update()

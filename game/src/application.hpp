@@ -3,6 +3,7 @@
 #include "stdafx.hpp"
 
 #include "scenemanager.hpp"
+#include "windowmanager.hpp"
 
 class Application {
 public:
@@ -32,4 +33,5 @@ private:
     GLFWwindow* window;
 
     std::unique_ptr<SceneManager> sceneManager;
+    std::unique_ptr<WindowManager> windowManager;
 };

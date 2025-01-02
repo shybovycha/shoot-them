@@ -1,6 +1,7 @@
 #include "scene1.hpp"
 
-scene1::Scene1::Scene1()
+scene1::Scene1::Scene1(WindowManager* windowManager)
+    : windowManager(windowManager)
 {
     triangleShader = std::make_unique<Shader>("resources/shaders/simple.vert", "resources/shaders/simple.frag");
 
@@ -79,8 +80,8 @@ void scene1::Scene1::render(float dt)
     glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
 
-    // TODO: expose projection on a higher level maybe? or obtain actual window size?
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) windowWidth / (float) windowHeight, 0.1f, 100.0f);
+    glm::vec2 windowSize = windowManager->getWindowSize();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float) windowSize.x / (float) windowSize.y, 0.1f, 100.0f);
 
     triangleShader->setFloat("dt", dt);
     triangleShader->setMat4("model", model);
