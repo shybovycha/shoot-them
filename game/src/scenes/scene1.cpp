@@ -4,7 +4,7 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     : Scene(windowManager, sceneManager)
 {
     modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
-    model3d = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
+    sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
 
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -76,7 +76,7 @@ void scene1::Scene1::render(float dt)
     modelShader->setMat4("view", view);
     modelShader->setMat4("projection", projection);
 
-    model3d->render();
+    sceneModel->render();
 
     glDisable(GL_DEPTH_TEST);
 }
