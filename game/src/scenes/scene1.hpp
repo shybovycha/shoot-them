@@ -24,8 +24,11 @@ namespace scene1
         void render(float dt) override;
 
     private:
-        std::unique_ptr<Shader> modelShader;
+        std::unique_ptr<Shader> sceneShader;
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
+        
+        // std::unique_ptr<Shader> rifleShader;
+        std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
 
         glm::vec3 cameraUp;
         glm::vec3 cameraPosition;

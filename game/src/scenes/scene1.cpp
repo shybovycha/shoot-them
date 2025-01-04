@@ -3,8 +3,9 @@
 scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     : Scene(windowManager, sceneManager)
 {
-    modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
+    sceneShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
+    rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -61,22 +62,43 @@ void scene1::Scene1::render(float dt)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    modelShader->use();
+    sceneShader->use();
 
-    glm::mat4 view = glm::mat4_cast(cameraOrientation)  * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+    {
+        glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
 
-    glm::vec2 windowSize = windowManager->getWindowSize();
+        glm::vec2 windowSize = windowManager->getWindowSize();
 
-    glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
-    glm::mat4 modelMatrix = glm::mat4(1.0f); // TODO: change this for each model
+        glm::mat4 modelMatrix = glm::mat4(1.0f);// TODO: change this for each model
 
-    modelShader->setFloat("dt", dt);
-    modelShader->setMat4("model", modelMatrix);
-    modelShader->setMat4("view", view);
-    modelShader->setMat4("projection", projection);
+        sceneShader->setFloat("dt", dt);
+        sceneShader->setMat4("model", modelMatrix);
+        sceneShader->setMat4("view", view);
+        sceneShader->setMat4("projection", projection);
 
-    sceneModel->render();
+        sceneModel->render();
+    }
+
+    // render rifle
+    {
+        glm::mat4 view = glm::mat4(1.0f); // glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
+
+        glm::vec2 windowSize = windowManager->getWindowSize();
+
+        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
+
+        glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.1f, -0.4f)), glm::vec3(0.5f));
+
+        sceneShader->setFloat("dt", dt);
+        sceneShader->setMat4("model", modelMatrix);
+        sceneShader->setMat4("view", view);
+        sceneShader->setMat4("projection", projection);
+
+        rifleModel->render();
+    }
 
     glDisable(GL_DEPTH_TEST);
 }

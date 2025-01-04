@@ -25,7 +25,8 @@ namespace scene2
 
     private:
         std::unique_ptr<Shader> modelShader;
-        std::unique_ptr<gltfmodel::GLTFModel> model3d;
+        std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
+        std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
 
         glm::vec3 cameraUp;
         glm::vec3 cameraPosition;
