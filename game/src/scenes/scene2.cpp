@@ -9,7 +9,7 @@ scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glm::vec3 cameraForward(0.0f, 0.0f, -1.0f);
-    cameraPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+    cameraPosition = glm::vec3(0.0f, 0.25f, 0.0f);
 
     cameraOrientation = glm::lookAtRH(cameraPosition, cameraForward, cameraUp);
 
