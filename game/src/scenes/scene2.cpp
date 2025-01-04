@@ -81,6 +81,8 @@ void scene2::Scene2::render(float dt)
         sceneModel->render();
     }
 
+    glDisable(GL_DEPTH_TEST);
+
     // render rifle
     {
         glm::mat4 view = glm::mat4(1.0f);// glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
@@ -99,6 +101,4 @@ void scene2::Scene2::render(float dt)
 
         rifleModel->render();
     }
-
-    glDisable(GL_DEPTH_TEST);
 }
