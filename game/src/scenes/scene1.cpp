@@ -71,7 +71,7 @@ void scene1::Scene1::render(float dt)
 
         glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
-        glm::mat4 modelMatrix = glm::mat4(1.0f);// TODO: change this for each model
+        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
 
         sceneShader->setFloat("dt", dt);
         sceneShader->setMat4("model", modelMatrix);
@@ -81,18 +81,18 @@ void scene1::Scene1::render(float dt)
         sceneModel->render();
     }
 
-    glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_DEPTH_TEST);
 
     // render rifle
     {
-        glm::mat4 view = glm::mat4(1.0f); // glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 view = glm::mat4(1.0f);
         glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
 
         glm::vec2 windowSize = windowManager->getWindowSize();
 
         glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
-        glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.1f, -0.4f)), glm::vec3(0.5f));
+        glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
 
         sceneShader->setFloat("dt", dt);
         sceneShader->setMat4("model", modelMatrix);
