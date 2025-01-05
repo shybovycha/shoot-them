@@ -214,6 +214,39 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
         }
     }
 
+    for (auto& light : model.lights)
+    {
+        glm::vec4 color(1.0f);
+
+        if (light.color.size() == 3)
+        {
+            color = glm::vec4(light.color[0], light.color[1], light.color[2], 1.0f);
+        }
+        else if (light.color.size() == 4)
+        {
+            color = glm::vec4(light.color[0], light.color[1], light.color[2], light.color[3]);
+        }
+
+        float intensity = light.intensity;
+        float range = light.range;
+
+        auto parentNode = std::find_if(model.nodes.begin(), model.nodes.end(), [light](tinygltf::Node& item) { return item.name == light.name; });
+
+        if (parentNode != model.nodes.end())
+        {
+            auto pos = (*parentNode).translation;
+
+            glm::vec3 position(pos[0], pos[1], pos[2]);
+
+            lights.push_back(Light {color, position, intensity, range});
+        }
+    }
+
+    // Create lights buffer
+    glCreateBuffers(1, &lightsBuffer);
+    glNamedBufferStorage(lightsBuffer, lights.size() * sizeof(Light),
+                         lights.data(), GL_DYNAMIC_STORAGE_BIT);
+
     // Create mesh buffer
     glCreateBuffers(1, &meshBuffer);
     glNamedBufferStorage(meshBuffer, meshes.size() * sizeof(MeshData),
@@ -258,6 +291,7 @@ gltfmodel::GLTFModel::~GLTFModel()
     glDeleteBuffers(1, &indexBuffer);
     glDeleteBuffers(1, &materialBuffer);
     glDeleteBuffers(1, &meshBuffer);
+    glDeleteBuffers(1, &lightsBuffer);
     glDeleteBuffers(1, &drawCommandBuffer);
 
     glDeleteVertexArrays(1, &vertexArrayObject);
@@ -273,6 +307,7 @@ void gltfmodel::GLTFModel::render()
     // Bind SSBOs
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, meshBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, lightsBuffer);
 
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);

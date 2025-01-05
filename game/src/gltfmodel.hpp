@@ -37,6 +37,13 @@ namespace gltfmodel
         uint32_t baseInstance;
     };
 
+    struct alignas(16) Light {
+        glm::vec4 color;
+        glm::vec3 position;
+        float intensity;
+        float range;
+    };
+
     class GLTFModel
     {
     public:
@@ -52,6 +59,7 @@ namespace gltfmodel
         GLuint indexBuffer;
         GLuint materialBuffer;
         GLuint meshBuffer;
+        GLuint lightsBuffer;
 
         GLuint drawCommandBuffer;
 
@@ -60,6 +68,7 @@ namespace gltfmodel
         std::vector<GLuint64> textureHandles;
         std::vector<MeshData> meshes;
         std::vector<MaterialData> materials;
+        std::vector<Light> lights;
         std::vector<DrawCommand> drawCommands;
     };
 }// namespace gltfmodel
