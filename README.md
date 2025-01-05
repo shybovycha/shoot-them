@@ -36,6 +36,13 @@ Slightly reworked the shader so it looks nicer:
 
 ![Game screenshot from 2023](https://github.com/shybovycha/shoot-them/blob/master/screenshots/ShootThem!%2021_09_2023.png)
 
+**2024-2025 (WIP):**
+
+Reworking all the assets, rewriting the code in modern OpenGL (4.6):
+
+![Game screenshot 1 (work in progress) from 2024-2025](https://github.com/shybovycha/shoot-them/blob/rework-2024/screenshots/Screenshot%202025-01-05%20125620.png)
+![Game screenshot 2 (work in progress) from 2024-2025](https://github.com/shybovycha/shoot-them/blob/rework-2024/screenshots/Screenshot%202025-01-05%20125805.png)
+
 ## Build
 
 Use CMake:
