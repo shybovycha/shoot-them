@@ -2,11 +2,11 @@
 
 #include "../stdafx.hpp"
 
-#include "../scene.hpp"
-#include "../shader.hpp"
-#include "../gltfmodel.hpp"
-#include "../windowmanager.hpp"
-#include "../scenemanager.hpp"
+#include "../core/scene.hpp"
+#include "../core/shader.hpp"
+#include "../core/gltfmodel.hpp"
+#include "../core/windowmanager.hpp"
+#include "../core/scenemanager.hpp"
 
 namespace scene1
 {
@@ -26,7 +26,7 @@ namespace scene1
     private:
         std::unique_ptr<Shader> sceneShader;
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
-        
+
         // std::unique_ptr<Shader> rifleShader;
         std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
 

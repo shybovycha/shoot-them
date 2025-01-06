@@ -14,7 +14,7 @@ public:
 
     virtual ~Scene() = default;
 
-    virtual void handleWindowResizeEvent(uint32_t width, uint32_t height)
+    virtual void handleWindowResizeEvent(int width, int height)
     {
     }
 

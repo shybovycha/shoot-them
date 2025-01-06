@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdafx.hpp"
+#include "../stdafx.hpp"
 
 #include "scenemanager.hpp"
 #include "windowmanager.hpp"

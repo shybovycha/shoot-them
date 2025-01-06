@@ -4,13 +4,13 @@ project(game VERSION 2.0.2 LANGUAGES CXX)
 
 set(SOURCES
     "src/main.cpp"
-    "src/application.cpp"
-    "src/scenemanager.cpp"
+    "src/core/application.cpp"
+    "src/core/scenemanager.cpp"
     "src/scenes/scene1.cpp"
     "src/scenes/scene2.cpp"
-    "src/shader.cpp"
-    "src/gltfmodel.cpp"
- "src/windowmanager.cpp")
+    "src/core/shader.cpp"
+    "src/core/gltfmodel.cpp"
+    "src/core/windowmanager.cpp")
 
 set(EXECUTABLE_NAME game)
 
