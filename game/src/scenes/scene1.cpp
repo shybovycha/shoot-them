@@ -77,6 +77,8 @@ void scene1::Scene1::render(float dt)
         sceneShader->setMat4("model", modelMatrix);
         sceneShader->setMat4("view", view);
         sceneShader->setMat4("projection", projection);
+        sceneShader->setInt("numLights", sceneModel->getLightsNum());
+        sceneShader->setVec3("viewPos", cameraPosition);
 
         sceneModel->render();
     }

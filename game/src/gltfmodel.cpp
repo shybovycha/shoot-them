@@ -216,16 +216,7 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
 
     for (auto& light : model.lights)
     {
-        glm::vec4 color(1.0f);
-
-        if (light.color.size() == 3)
-        {
-            color = glm::vec4(light.color[0], light.color[1], light.color[2], 1.0f);
-        }
-        else if (light.color.size() == 4)
-        {
-            color = glm::vec4(light.color[0], light.color[1], light.color[2], light.color[3]);
-        }
+        glm::vec3 color(light.color[0], light.color[1], light.color[2]);
 
         float intensity = light.intensity;
         float range = light.range;
@@ -323,4 +314,9 @@ void gltfmodel::GLTFModel::render()
             drawCommands.size(),// Number of commands
             0                   // Stride (0 means tightly packed)
     );
+}
+
+int gltfmodel::GLTFModel::getLightsNum() const
+{
+    return lights.size();
 }

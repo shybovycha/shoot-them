@@ -28,16 +28,17 @@ out vec3 fragPos;
 out vec2 texCoord;
 out vec3 normal;
 out flat uint materialIndex;
+out mat4 modelTransform;
 
 void main() {
     // Get mesh data for this instance
     Mesh mesh = meshes[gl_BaseInstance];
 
-    mat4 transform = model * mesh.transform;
+    modelTransform = model * mesh.transform;
 
-    gl_Position = projection * view * transform * vec4(inPosition, 1.0);
-    fragPos = vec3(transform * vec4(inPosition, 1.0));
-    normal = mat3(transpose(inverse(transform))) * inNormal;
+    gl_Position = projection * view * modelTransform * vec4(inPosition, 1.0);
+    fragPos = vec3(modelTransform * vec4(inPosition, 1.0));
+    normal = mat3(transpose(inverse(modelTransform))) * inNormal;
 
     texCoord = inTexCoord;
     materialIndex = mesh.materialIndex;

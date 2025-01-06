@@ -38,10 +38,10 @@ namespace gltfmodel
     };
 
     struct alignas(16) Light {
-        glm::vec4 color;
-        glm::vec3 position;
-        float intensity;
-        float range;
+        alignas(16) glm::vec3 color;
+        alignas(16) glm::vec3 position;
+        alignas(4) float intensity;
+        alignas(4) float range;
     };
 
     class GLTFModel
@@ -53,6 +53,8 @@ namespace gltfmodel
 
         // void render(std::shared_ptr<Shader> shader);
         void render();
+
+        int getLightsNum() const;
 
     private:
         GLuint vertexBuffer;
