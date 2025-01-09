@@ -8,6 +8,96 @@
 
 #include <tiny_gltf.h>
 
+glm::mat4 calculateLocalTransform(const tinygltf::Node& node)
+{
+    glm::mat4 translation {1.0f};
+    glm::mat4 rotation {1.0f};
+    glm::mat4 scale {1.0f};
+
+    // Handle matrix transform if present
+    if (!node.matrix.empty())
+    {
+        glm::mat4 matrix;
+        std::copy(node.matrix.begin(), node.matrix.end(), &matrix[0][0]);
+        return matrix;
+    }
+
+    // Handle TRS transforms
+    if (!node.translation.empty())
+    {
+        translation = glm::translate(glm::mat4(1.0f), glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
+    }
+
+    if (!node.rotation.empty())
+    {
+        glm::quat q(
+                node.rotation[3],// w
+                node.rotation[0],// x
+                node.rotation[1],// y
+                node.rotation[2] // z
+        );
+
+        rotation = glm::mat4_cast(q);
+    }
+
+    if (!node.scale.empty())
+    {
+        scale = glm::scale(glm::mat4(1.0f), glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
+    }
+
+    return translation * rotation * scale;
+}
+
+void processNode(const tinygltf::Model& model, int nodeIndex, const glm::mat4& parentTransform, std::vector<gltfmodel::Light>& lights)
+{
+    const tinygltf::Node& node = model.nodes[nodeIndex];
+
+    // Calculate node's transform
+    glm::mat4 localTransform = calculateLocalTransform(node);
+    glm::mat4 globalTransform = parentTransform * localTransform;
+
+    // Check if this node has a light extension
+    auto it = node.extensions.find("KHR_lights_punctual");
+
+    if (it != node.extensions.end())
+    {
+        // Get light index from extension
+        int lightIndex = it->second.Get("light").GetNumberAsInt();
+        const tinygltf::Light& gltfLight = model.lights[lightIndex];
+
+        if (gltfLight.type == "point")
+        {
+            gltfmodel::Light light;
+
+            // Transform light position by global transform
+            glm::vec4 pos = globalTransform * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            light.position = glm::vec3(pos); // glm::vec3(pos) * lightSceneTransform; // but since the transform is set at a later time, can't precalculate it
+
+            // Convert color and intensity
+            light.color = glm::vec3(
+                    gltfLight.color[0],
+                    gltfLight.color[1],
+                    gltfLight.color[2]);
+
+            light.intensity = static_cast<float>(gltfLight.intensity);
+
+            // Set default attenuation if not specified
+            // light.attenuation = glm::vec3(1.0f, 0.09f, 0.032f);
+
+            // Get range (radius) if specified
+            light.range = gltfLight.range > 0.0f ? static_cast<float>(gltfLight.range) : 10.0f;
+
+            lights.push_back(light);
+        }
+    }
+
+    // Process child nodes
+    for (int child : node.children)
+    {
+        processNode(model, child, globalTransform, lights);
+    }
+}
+
 gltfmodel::GLTFModel::GLTFModel(std::string_view path)
 {
     tinygltf::Model model;
@@ -214,7 +304,14 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
         }
     }
 
-    for (auto& light : model.lights)
+    const tinygltf::Scene& scene = model.scenes[model.defaultScene];
+    
+    for (int nodeIndex : scene.nodes)
+    {
+        processNode(model, nodeIndex, glm::mat4(1.0f), lights);
+    }
+
+    /*for (auto& light : model.lights)
     {
         glm::vec3 color(light.color[0], light.color[1], light.color[2]);
 
@@ -231,7 +328,7 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
 
             lights.push_back(Light {color, position, intensity, range});
         }
-    }
+    }*/
 
     // Create lights buffer
     glCreateBuffers(1, &lightsBuffer);
@@ -316,7 +413,7 @@ void gltfmodel::GLTFModel::render()
     );
 }
 
-int gltfmodel::GLTFModel::getLightsNum() const
+std::vector<gltfmodel::Light> gltfmodel::GLTFModel::getLights() const
 {
-    return lights.size();
+    return lights;
 }

@@ -7,6 +7,18 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
+    for (auto l : sceneModel->getLights())
+    {
+        lights.push_back(l);
+    }
+
+    // somehow vector iterators are from different vectors here?
+    /*lights.insert(
+        lights.end(),
+        std::make_move_iterator(sceneModel->getLights().begin()),
+        std::make_move_iterator(sceneModel->getLights().end())
+    );*/
+
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glm::vec3 cameraForward(0.0f, 0.0f, -1.0f);
@@ -77,7 +89,7 @@ void scene1::Scene1::render(float dt)
         sceneShader->setMat4("model", modelMatrix);
         sceneShader->setMat4("view", view);
         sceneShader->setMat4("projection", projection);
-        sceneShader->setInt("numLights", sceneModel->getLightsNum());
+        sceneShader->setInt("numLights", lights.size());
         sceneShader->setVec3("viewPos", cameraPosition);
 
         sceneModel->render();

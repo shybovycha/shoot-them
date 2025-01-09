@@ -7,6 +7,11 @@ scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Egypt2.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
+    for (auto l : sceneModel->getLights())
+    {
+        lights.push_back(l);
+    }
+
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glm::vec3 cameraForward(0.0f, 0.0f, -1.0f);
@@ -77,7 +82,7 @@ void scene2::Scene2::render(float dt)
         modelShader->setMat4("model", modelMatrix);
         modelShader->setMat4("view", view);
         modelShader->setMat4("projection", projection);
-        modelShader->setInt("numLights", sceneModel->getLightsNum());
+        modelShader->setInt("numLights", lights.size());
         modelShader->setVec3("viewPos", cameraPosition);
 
         sceneModel->render();

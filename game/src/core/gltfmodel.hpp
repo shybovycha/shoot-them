@@ -54,7 +54,7 @@ namespace gltfmodel
         // void render(std::shared_ptr<Shader> shader);
         void render();
 
-        int getLightsNum() const;
+        std::vector<Light> getLights() const;
 
     private:
         GLuint vertexBuffer;
