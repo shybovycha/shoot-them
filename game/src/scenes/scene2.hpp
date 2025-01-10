@@ -28,7 +28,7 @@ namespace scene2
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
         std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
         
-        std::vector<gltfmodel::Light> lights;
+        std::vector<sceneshader::Light> lights;
 
         glm::vec3 cameraUp;
         glm::vec3 cameraPosition;

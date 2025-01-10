@@ -234,4 +234,5 @@ void sceneshader::SceneShader::set_viewPos(glm::vec3 value)
 void sceneshader::SceneShader::set_lights_buffer(std::vector<Light> value)
 {
     updateBufferData(lights_buffer_location, value);
+    setInt(numLights_location, value.size());
 }

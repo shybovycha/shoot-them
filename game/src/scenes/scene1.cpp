@@ -7,9 +7,9 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
-    for (auto l : sceneModel->getLights())
+    for (const auto& l : sceneModel->getLights())
     {
-        lights.push_back(l);
+        lights.push_back(sceneshader::Light { .color = l.color, .position = l.position, .intensity = l.intensity, .range = l.range });
     }
 
     // somehow vector iterators are from different vectors here?
@@ -89,8 +89,11 @@ void scene1::Scene1::render(float dt)
         sceneShader->set_modelMatrix(modelMatrix);
         sceneShader->set_viewMatrix(view);
         sceneShader->set_projectionMatrix(projection);
-        sceneShader->set_numLights(lights.size());
         sceneShader->set_viewPos(cameraPosition);
+        sceneShader->set_numLights(lights.size());
+
+        // TODO: this won't work, since the buffer which needs to be _bound_ before this call, resides in sceneModel; maybe need to combine the sceneShader and all models in the scene?
+        // sceneShader->set_lights_buffer(lights);
 
         sceneModel->render();
     }
@@ -112,6 +115,11 @@ void scene1::Scene1::render(float dt)
         sceneShader->set_modelMatrix(modelMatrix);
         sceneShader->set_viewMatrix(view);
         sceneShader->set_projectionMatrix(projection);
+
+        sceneShader->set_numLights(lights.size());
+
+        // TODO: fix as per above
+        // sceneShader->set_lights_buffer(lights);
 
         rifleModel->render();
     }

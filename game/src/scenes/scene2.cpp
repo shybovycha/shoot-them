@@ -7,9 +7,9 @@ scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Egypt2.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
-    for (auto l : sceneModel->getLights())
+    for (const auto& l : sceneModel->getLights())
     {
-        lights.push_back(l);
+        lights.push_back(sceneshader::Light {.color = l.color, .position = l.position, .intensity = l.intensity, .range = l.range});
     }
 
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
