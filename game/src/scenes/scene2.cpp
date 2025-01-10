@@ -3,7 +3,7 @@
 scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
     : Scene(windowManager, sceneManager)
 {
-    modelShader = std::make_unique<Shader>("resources/shaders/model.vert", "resources/shaders/model.frag");
+    modelShader = std::make_unique<sceneshader::SceneShader>();
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Egypt2.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 

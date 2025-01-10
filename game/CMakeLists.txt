@@ -10,7 +10,8 @@ set(SOURCES
     "src/scenes/scene2.cpp"
     "src/core/shader.cpp"
     "src/core/gltfmodel.cpp"
-    "src/core/windowmanager.cpp")
+    "src/core/windowmanager.cpp"
+    "src/scenes/sceneshader.cpp")
 
 set(EXECUTABLE_NAME game)
 

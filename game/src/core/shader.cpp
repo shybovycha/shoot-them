@@ -37,23 +37,21 @@ static GLuint compileShader(std::string_view source, GLenum type)
     return shader;
 }
 
-Shader::Shader(std::string_view vertexShaderPath, std::string_view fragmentShaderPath)
+Shader::Shader(std::string_view vertexShaderSource, std::string_view fragmentShaderSource)
 {
-    auto vertexSource = readFile(vertexShaderPath);
-    auto vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
+    auto vertexShader = compileShader(vertexShaderSource, GL_VERTEX_SHADER);
 
     if (!vertexShader)
     {
-        throw std::runtime_error(fmt::format("Can not compile vertex shader: {}", vertexShaderPath));
+        throw std::runtime_error("Can not compile vertex shader");
     }
 
-    auto fragmentSource = readFile(fragmentShaderPath);
-    auto fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
+    auto fragmentShader = compileShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
 
     if (!fragmentShader)
     {
         glDeleteShader(vertexShader);
-        throw std::runtime_error(fmt::format("Can not compile fragment shader: {}", fragmentShaderPath));
+        throw std::runtime_error("Can not compile fragment shader");
     }
 
     program = glCreateProgram();
@@ -88,7 +86,6 @@ Shader::Shader(std::string_view vertexShaderPath, std::string_view fragmentShade
 //    auto geometrySource = readFile(geometryShaderPath);
 //}
 
-
 void Shader::use() const
 {
     glUseProgram(program);
@@ -97,35 +94,89 @@ void Shader::use() const
 void Shader::setVec2(std::string_view name, const glm::vec2& value) const
 {
     GLint location = glGetUniformLocation(program, name.data());
-    glUniform2fv(location, 1, glm::value_ptr(value));
+    setVec2(location, value);
 }
 
 void Shader::setVec3(std::string_view name, const glm::vec3& value) const
 {
     GLint location = glGetUniformLocation(program, name.data());
-    glUniform3fv(location, 1, glm::value_ptr(value));
+    setVec3(location, value);
 }
 
 void Shader::setVec4(std::string_view name, const glm::vec4& value) const
 {
     GLint location = glGetUniformLocation(program, name.data());
-    glUniform4fv(location, 1, glm::value_ptr(value));
+    setVec4(location, value);
 }
 
 void Shader::setMat4(std::string_view name, const glm::mat4& value) const
 {
     GLint location = glGetUniformLocation(program, name.data());
-    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+    setMat4(location, value);
 }
 
 void Shader::setFloat(std::string_view name, float value) const
 {
     GLint location = glGetUniformLocation(program, name.data());
-    glUniform1f(location, value);
+    setFloat(location, value);
 }
 
 void Shader::setInt(std::string_view name, float value) const
 {
     GLint location = glGetUniformLocation(program, name.data());
+    setInt(location, value);
+}
+
+void Shader::setVec2(GLuint location, const glm::vec2& value) const
+{
+    glUniform2fv(location, 1, glm::value_ptr(value));
+}
+
+void Shader::setVec3(GLuint location, const glm::vec3& value) const
+{
+    glUniform3fv(location, 1, glm::value_ptr(value));
+}
+
+void Shader::setVec4(GLuint location, const glm::vec4& value) const
+{
+    glUniform4fv(location, 1, glm::value_ptr(value));
+}
+
+void Shader::setMat4(GLuint location, const glm::mat4& value) const
+{
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Shader::setFloat(GLuint location, float value) const
+{
+    glUniform1f(location, value);
+}
+
+void Shader::setInt(GLuint location, float value) const
+{
     glUniform1i(location, value);
+}
+
+GLuint Shader::getUniformLocation(std::string_view name) const
+{
+    return glGetUniformLocation(program, name.data());
+}
+
+GLuint Shader::getSSBOLocation(std::string_view bufferName) const
+{
+    // glGetProgramResourceIndex works for any named resource in the shader
+    GLuint index = glGetProgramResourceIndex(program, GL_SHADER_STORAGE_BLOCK, bufferName.data());
+
+    if (index == GL_INVALID_INDEX)
+    {
+        throw std::runtime_error(fmt::format("Failed to find SSBO '{}'", bufferName));
+    }
+
+    // Get the buffer's binding point
+    GLint binding = 0;
+    GLenum props[] = {GL_BUFFER_BINDING};
+    GLsizei length;
+    glGetProgramResourceiv(program, GL_SHADER_STORAGE_BLOCK, index, 1, props, 1, &length, &binding);
+
+    return binding;
 }

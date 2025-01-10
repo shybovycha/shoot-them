@@ -3,10 +3,10 @@
 #include "../stdafx.hpp"
 
 #include "../core/scene.hpp"
-#include "../core/shader.hpp"
 #include "../core/gltfmodel.hpp"
 #include "../core/windowmanager.hpp"
 #include "../core/scenemanager.hpp"
+#include "sceneshader.hpp"
 
 namespace scene1
 {
@@ -24,7 +24,7 @@ namespace scene1
         void render(float dt) override;
 
     private:
-        std::unique_ptr<Shader> sceneShader;
+        std::unique_ptr<sceneshader::SceneShader> sceneShader;
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
 
         // std::unique_ptr<Shader> rifleShader;
