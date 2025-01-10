@@ -24,7 +24,7 @@ namespace scene2
         void render(float dt) override;
 
     private:
-        std::unique_ptr<sceneshader::SceneShader> modelShader;
+        std::unique_ptr<sceneshader::SceneShader> sceneShader;
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
         std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
         

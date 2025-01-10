@@ -3,7 +3,7 @@
 scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
     : Scene(windowManager, sceneManager)
 {
-    modelShader = std::make_unique<sceneshader::SceneShader>();
+    sceneShader = std::make_unique<sceneshader::SceneShader>();
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Egypt2.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
@@ -67,7 +67,7 @@ void scene2::Scene2::render(float dt)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    modelShader->use();
+    sceneShader->use();
 
     {
         glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
@@ -78,12 +78,12 @@ void scene2::Scene2::render(float dt)
 
         glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-        modelShader->setFloat("dt", dt);
-        modelShader->setMat4("model", modelMatrix);
-        modelShader->setMat4("view", view);
-        modelShader->setMat4("projection", projection);
-        modelShader->setInt("numLights", lights.size());
-        modelShader->setVec3("viewPos", cameraPosition);
+        sceneShader->set_dt(dt);
+        sceneShader->set_modelMatrix(modelMatrix);
+        sceneShader->set_viewMatrix(view);
+        sceneShader->set_projectionMatrix(projection);
+        sceneShader->set_numLights(lights.size());
+        sceneShader->set_viewPos(cameraPosition);
 
         sceneModel->render();
     }
@@ -101,10 +101,11 @@ void scene2::Scene2::render(float dt)
 
         glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
 
-        modelShader->setFloat("dt", dt);
-        modelShader->setMat4("model", modelMatrix);
-        modelShader->setMat4("view", view);
-        modelShader->setMat4("projection", projection);
+        sceneShader->set_dt(dt);
+        sceneShader->set_modelMatrix(modelMatrix);
+        sceneShader->set_viewMatrix(view);
+        sceneShader->set_projectionMatrix(projection);
+        sceneShader->set_numLights(lights.size());
 
         rifleModel->render();
     }

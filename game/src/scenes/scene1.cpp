@@ -85,12 +85,12 @@ void scene1::Scene1::render(float dt)
 
         glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
 
-        sceneShader->setFloat("dt", dt);
-        sceneShader->setMat4("model", modelMatrix);
-        sceneShader->setMat4("view", view);
-        sceneShader->setMat4("projection", projection);
-        sceneShader->setInt("numLights", lights.size());
-        sceneShader->setVec3("viewPos", cameraPosition);
+        sceneShader->set_dt(dt);
+        sceneShader->set_modelMatrix(modelMatrix);
+        sceneShader->set_viewMatrix(view);
+        sceneShader->set_projectionMatrix(projection);
+        sceneShader->set_numLights(lights.size());
+        sceneShader->set_viewPos(cameraPosition);
 
         sceneModel->render();
     }
@@ -108,10 +108,10 @@ void scene1::Scene1::render(float dt)
 
         glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
 
-        sceneShader->setFloat("dt", dt);
-        sceneShader->setMat4("model", modelMatrix);
-        sceneShader->setMat4("view", view);
-        sceneShader->setMat4("projection", projection);
+        sceneShader->set_dt(dt);
+        sceneShader->set_modelMatrix(modelMatrix);
+        sceneShader->set_viewMatrix(view);
+        sceneShader->set_projectionMatrix(projection);
 
         rifleModel->render();
     }
