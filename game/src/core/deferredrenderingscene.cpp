@@ -110,6 +110,8 @@ void DeferredRenderingScene::render(float dt)
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        forwardRenderPassShader->use();
+
         // delegate
         forwardRenderPass(dt, forwardRenderPassShader.get());
     }
