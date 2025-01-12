@@ -3,7 +3,9 @@
 scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     : Scene(windowManager, sceneManager)
 {
-    sceneShader = std::make_unique<sceneshader::SceneShader>();
+    forwardRenderPassShader = std::make_unique<deferredrendering::shaders::ForwardRenderPassShader>();
+    shadingRenderPassShader = std::make_unique<deferredrendering::shaders::ShadingRenderPassShader>();
+
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
@@ -27,6 +29,86 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     cameraOrientation = glm::lookAtRH(cameraPosition, cameraForward, cameraUp);
 
     fov = 45.0f;
+
+    // setup screen space quad for deferred rendering
+    {
+        // 3 floats for position, 2 floats for UV, 4 vertices for a quad
+        std::array<float, (3 + 2) * 4> quadVertices[] = {
+                // positions        // texture Coords
+                -1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
+                -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+                1.0f, 1.0f, 0.0f,   1.0f, 1.0f,
+                1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
+        };
+
+        // Setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+
+        // Position attribute
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+
+        // TexCoords attribute
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+
+        // Cleanup
+        glBindVertexArray(0);
+    }
+
+    // setup deferred rendering buffers
+    {
+        unsigned int width = windowManager->getWindowSize().x;
+        unsigned int height = windowManager->getWindowSize().y;
+
+        glGenFramebuffers(1, &gBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+
+        // Position buffer
+        glGenTextures(1, &gPositionTexture);
+        glBindTexture(GL_TEXTURE_2D, gPositionTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPositionTexture, 0);
+
+        // Normal buffer
+        glGenTextures(1, &gNormalTexture);
+        glBindTexture(GL_TEXTURE_2D, gNormalTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormalTexture, 0);
+
+        // Albedo + Specular buffer
+        glGenTextures(1, &gAlbedoSpecTexture);
+        glBindTexture(GL_TEXTURE_2D, gAlbedoSpecTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpecTexture, 0);
+
+        // Tell OpenGL which color attachments we'll use
+        GLuint attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+        glDrawBuffers(3, attachments);
+
+        // Create and attach depth buffer
+        glGenRenderbuffers(1, &rboDepthBuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, rboDepthBuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthBuffer);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            throw std::runtime_error("Framebuffer is not complete");
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 }
 
 scene1::Scene1::~Scene1()
@@ -70,57 +152,70 @@ void scene1::Scene1::handleCursorPositionEvent(double x, double y)
 
 void scene1::Scene1::render(float dt)
 {
-    glEnable(GL_DEPTH_TEST);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    sceneShader->use();
-
+    // forward rendering pass
     {
-        glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+        glEnable(GL_DEPTH_TEST);
 
-        glm::vec2 windowSize = windowManager->getWindowSize();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
+        glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+        forwardRenderPassShader->use();
 
-        sceneShader->set_dt(dt);
-        sceneShader->set_modelMatrix(modelMatrix);
-        sceneShader->set_viewMatrix(view);
-        sceneShader->set_projectionMatrix(projection);
-        sceneShader->set_viewPos(cameraPosition);
-        sceneShader->set_numLights(lights.size());
+        {
+            glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
 
-        // TODO: this won't work, since the buffer which needs to be _bound_ before this call, resides in sceneModel; maybe need to combine the sceneShader and all models in the scene?
-        // sceneShader->set_lights_buffer(lights);
+            glm::vec2 windowSize = windowManager->getWindowSize();
 
-        sceneModel->render();
+            glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
+
+            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+
+            forwardRenderPassShader->set_modelMatrix(modelMatrix);
+            forwardRenderPassShader->set_viewMatrix(view);
+            forwardRenderPassShader->set_projectionMatrix(projection);
+
+            sceneModel->render();
+        }
+
+        // render rifle
+        {
+            glm::mat4 view = glm::mat4(1.0f);
+            glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
+
+            glm::vec2 windowSize = windowManager->getWindowSize();
+
+            glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
+
+            glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
+
+            forwardRenderPassShader->set_modelMatrix(modelMatrix);
+            forwardRenderPassShader->set_viewMatrix(view);
+            forwardRenderPassShader->set_projectionMatrix(projection);
+
+            rifleModel->render();
+        }
     }
 
-    // glDisable(GL_DEPTH_TEST);
-
-    // render rifle
+    // shading rendering pass
     {
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::vec2 windowSize = windowManager->getWindowSize();
+        shadingRenderPassShader->use();
 
-        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
+        shadingRenderPassShader->bindPositionTexture(gPositionTexture);
+        shadingRenderPassShader->bindNormalTexture(gNormalTexture);
+        shadingRenderPassShader->bindAlbedoSpecTexture(gAlbedoSpecTexture);
 
-        glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
+        shadingRenderPassShader->set_viewPos(cameraPosition);
 
-        sceneShader->set_dt(dt);
-        sceneShader->set_modelMatrix(modelMatrix);
-        sceneShader->set_viewMatrix(view);
-        sceneShader->set_projectionMatrix(projection);
+        // glBindTextureUnit(textureUnitId, gPositionTexture);
+        // glBindSampler(textureUnitId, samplerId);
 
-        sceneShader->set_numLights(lights.size());
-
-        // TODO: fix as per above
-        // sceneShader->set_lights_buffer(lights);
-
-        rifleModel->render();
+        glBindVertexArray(quadVAO);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glBindVertexArray(0);
     }
 }

@@ -6,12 +6,14 @@ set(SOURCES
     "src/main.cpp"
     "src/core/application.cpp"
     "src/core/scenemanager.cpp"
-    "src/scenes/scene1.cpp"
-    "src/scenes/scene2.cpp"
     "src/core/shader.cpp"
     "src/core/gltfmodel.cpp"
     "src/core/windowmanager.cpp"
-    "src/scenes/sceneshader.cpp")
+    "src/scenes/scene1.cpp"
+    "src/scenes/scene2.cpp"
+    "src/shaders/sceneshader.cpp"
+    "src/shaders/forwardrenderpassshader.cpp"
+    "src/shaders/shadingrenderpassshader.cpp")
 
 set(EXECUTABLE_NAME game)
 

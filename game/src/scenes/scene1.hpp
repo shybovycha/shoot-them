@@ -6,7 +6,8 @@
 #include "../core/gltfmodel.hpp"
 #include "../core/windowmanager.hpp"
 #include "../core/scenemanager.hpp"
-#include "sceneshader.hpp"
+#include "../shaders/forwardrenderpassshader.hpp"
+#include "../shaders/shadingrenderpassshader.hpp"
 
 namespace scene1
 {
@@ -24,7 +25,9 @@ namespace scene1
         void render(float dt) override;
 
     private:
-        std::unique_ptr<sceneshader::SceneShader> sceneShader;
+        std::unique_ptr<deferredrendering::shaders::ForwardRenderPassShader> forwardRenderPassShader;
+        std::unique_ptr<deferredrendering::shaders::ShadingRenderPassShader> shadingRenderPassShader;
+
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
 
         // std::unique_ptr<Shader> rifleShader;
@@ -37,5 +40,15 @@ namespace scene1
         glm::quat cameraOrientation;
 
         float fov;
+
+        // deferred rendering
+        GLuint gPositionTexture;
+        GLuint gNormalTexture;
+        GLuint gAlbedoSpecTexture;
+        GLuint gBuffer;
+        GLuint rboDepthBuffer;
+
+        GLuint quadVAO;
+        GLuint quadVBO;
     };
 }// namespace scene2

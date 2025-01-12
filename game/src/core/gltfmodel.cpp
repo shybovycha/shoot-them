@@ -395,7 +395,7 @@ void gltfmodel::GLTFModel::render()
     // Bind SSBOs
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, meshBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, lightsBuffer);
+    // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, lightsBuffer);
 
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);

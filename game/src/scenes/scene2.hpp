@@ -6,7 +6,7 @@
 #include "../core/gltfmodel.hpp"
 #include "../core/windowmanager.hpp"
 #include "../core/scenemanager.hpp"
-#include "sceneshader.hpp"
+#include "../shaders/sceneshader.hpp"
 
 namespace scene2
 {
