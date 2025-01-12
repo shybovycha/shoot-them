@@ -6,7 +6,8 @@
 #include "../core/gltfmodel.hpp"
 #include "../core/windowmanager.hpp"
 #include "../core/scenemanager.hpp"
-#include "../shaders/sceneshader.hpp"
+#include "../shaders/forwardrenderpassshader.hpp"
+#include "../shaders/shadingrenderpassshader.hpp"
 
 namespace scene2
 {
@@ -24,16 +25,30 @@ namespace scene2
         void render(float dt) override;
 
     private:
-        std::unique_ptr<sceneshader::SceneShader> sceneShader;
+        std::unique_ptr<deferredrendering::shaders::ForwardRenderPassShader> forwardRenderPassShader;
+        std::unique_ptr<deferredrendering::shaders::ShadingRenderPassShader> shadingRenderPassShader;
+
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
         std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
         
-        std::vector<sceneshader::Light> lights;
+        std::vector<deferredrendering::shaders::Light> lights;
 
         glm::vec3 cameraUp;
         glm::vec3 cameraPosition;
         glm::quat cameraOrientation;
 
         float fov;
+
+        // deferred rendering
+        GLuint gPositionTexture;
+        GLuint gNormalTexture;
+        GLuint gAlbedoSpecTexture;
+        GLuint gBuffer;
+        GLuint rboDepthBuffer;
+
+        GLuint lightsBuffer;
+
+        GLuint quadVAO;
+        GLuint quadVBO;
     };
 }// namespace scene2
