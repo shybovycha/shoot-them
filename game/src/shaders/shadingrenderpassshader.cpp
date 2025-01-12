@@ -57,10 +57,6 @@ vec3 CalcPointLight(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3
     // attenuation
     float distance    = length(light.position - fragPos);
 
-    if (distance > light.range) {
-        return vec3(0.0);
-    }
-
     float attenuation = getDistanceAttenuation(distance, light.range);
 
     vec3 vec_attenuation = vec3(1.0, 0.09, 0.032);
@@ -69,7 +65,7 @@ vec3 CalcPointLight(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3
                              vec_attenuation.y * distance +
                              vec_attenuation.z * distance * distance);
 
-    float intensity = min(light.intensity, 10.0);
+    float intensity = min(light.intensity, 1.0);
 
     // combine results
     // Diffuse
@@ -81,7 +77,7 @@ vec3 CalcPointLight(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
     vec3 specular = light.color * spec * intensity;
 
-    return baseColor * diffuse * attenuation + specular * attenuation;
+    return baseColor * 0.2 + diffuse * attenuation + specular * attenuation;
 }
 
 void main() {
@@ -99,7 +95,7 @@ void main() {
         Lo += CalcPointLight(lights[i], Albedo, Normal, FragPos, V); 
     }
     
-    vec3 ambient = vec3(0.03) * Albedo;
+    vec3 ambient = vec3(0.1) * Albedo;
     vec3 color = ambient + Lo;
     
     // HDR tonemapping and gamma correction
