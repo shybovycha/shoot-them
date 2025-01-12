@@ -40,10 +40,6 @@ namespace deferredrendering
 
             void set_projectionMatrix(glm::mat4 value) const;
 
-            void bindAlbedoMapTexture(GLuint textureId) const;
-            
-            void bindNormalMapTexture(GLuint textureId) const;
-
         private:
             GLuint modelMatrix_location;
             GLuint viewMatrix_location;

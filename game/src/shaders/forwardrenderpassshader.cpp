@@ -63,10 +63,7 @@ void main() {
 )glsl";
 
 const std::string_view VERTEX_SHADER_SOURCE = R"glsl(
-#version 460
-
-#extension GL_ARB_bindless_texture : require
-#extension GL_ARB_shader_storage_buffer_object : require
+#version 460 core
 
 struct Mesh {
     mat4 transform;
@@ -111,16 +108,12 @@ void main() {
 )glsl";
 
 const std::string_view FRAGMENT_SHADER_SOURCE = R"glsl(
-#version 460
-
-#extension GL_ARB_bindless_texture : require
-#extension GL_ARB_shader_storage_buffer_object : require
-#extension GL_ARB_gpu_shader_int64 : require
+#version 460 core
 
 struct Material {
     vec4 baseColorFactor;
-    uint64_t baseColorTexture;
-    uint64_t normalTexture;
+    uint baseColorTexture;
+    uint normalTexture;
     float metallicFactor;
     float roughnessFactor;
     vec2 padding;
@@ -136,6 +129,10 @@ layout(std430, binding = 1) readonly buffer MaterialBuffer {
     Material materials[];
 };
 
+const uint MAX_TEXTURES = 16;
+
+layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];    // Array of base color & normal map textures
+
 uniform mat4 view;
 
 layout (location = 0) out vec4 gPosition;
@@ -146,8 +143,8 @@ void main() {
     Material material = materials[materialIndex];
     
     // Sample using bindless texture handle
-    vec4 baseColor = texture(sampler2D(material.baseColorTexture), texCoord);
-    vec3 normal = texture(sampler2D(material.normalTexture), texCoord).rgb;
+    vec4 baseColor = texture(textures[material.baseColorTexture], texCoord);
+    vec3 normal = texture(textures[material.normalTexture], texCoord).rgb;
     
     // Apply material properties
     vec3 finalColor = baseColor.rgb * material.baseColorFactor.rgb;
@@ -183,14 +180,4 @@ void deferredrendering::shaders::ForwardRenderPassShader::set_viewMatrix(glm::ma
 void deferredrendering::shaders::ForwardRenderPassShader::set_projectionMatrix(glm::mat4 value) const
 {
     setMat4(projectionMatrix_location, value);
-}
-
-void deferredrendering::shaders::ForwardRenderPassShader::bindAlbedoMapTexture(GLuint textureId) const
-{
-    glBindSampler(albedoMapSampler_location, textureId);
-}
-
-void deferredrendering::shaders::ForwardRenderPassShader::bindNormalMapTexture(GLuint textureId) const
-{
-    glBindSampler(normalMapSampler_location, textureId);
 }

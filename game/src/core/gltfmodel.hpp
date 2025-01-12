@@ -14,8 +14,8 @@ namespace gltfmodel
 
     struct alignas(16) MaterialData {
         glm::vec4 baseColorFactor;
-        GLuint64 baseColorTexture;
-        GLuint64 normalTexture;
+        GLuint baseColorTexture;
+        GLuint normalTexture;
         float metallicFactor;
         float roughnessFactor;
         glm::vec2 padding;
@@ -67,7 +67,7 @@ namespace gltfmodel
 
         GLuint vertexArrayObject;
 
-        std::vector<GLuint64> textureHandles;
+        std::vector<GLuint> textureBindings;
         std::vector<MeshData> meshes;
         std::vector<MaterialData> materials;
         std::vector<Light> lights;

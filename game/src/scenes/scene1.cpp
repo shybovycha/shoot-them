@@ -156,8 +156,6 @@ void scene1::Scene1::render(float dt)
     {
         glEnable(GL_DEPTH_TEST);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -210,9 +208,6 @@ void scene1::Scene1::render(float dt)
         shadingRenderPassShader->bindAlbedoSpecTexture(gAlbedoSpecTexture);
 
         shadingRenderPassShader->set_viewPos(cameraPosition);
-
-        // glBindTextureUnit(textureUnitId, gPositionTexture);
-        // glBindSampler(textureUnitId, samplerId);
 
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

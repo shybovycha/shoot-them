@@ -162,6 +162,11 @@ GLuint Shader::getUniformLocation(std::string_view name) const
     return glGetUniformLocation(program, name.data());
 }
 
+GLuint Shader::getSamplerUniformLocation(std::string_view name) const
+{
+    return glGetAttribLocation(program, name.data());
+}
+
 GLuint Shader::getSSBOLocation(std::string_view bufferName) const
 {
     // glGetProgramResourceIndex works for any named resource in the shader

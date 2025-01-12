@@ -246,8 +246,9 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
             glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            material.baseColorTexture = glGetTextureHandleARB(textureId);
-            glMakeTextureHandleResidentARB(material.baseColorTexture);
+            material.baseColorTexture = textureId;
+            // material.baseColorTexture = glGetTextureHandleARB(textureId);
+            // glMakeTextureHandleResidentARB(material.baseColorTexture);
         }
 
         // Normal texture
@@ -264,9 +265,14 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
             glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            material.normalTexture = glGetTextureHandleARB(textureId);
-            glMakeTextureHandleResidentARB(material.normalTexture);
+            material.normalTexture = textureId;
+            // material.normalTexture = glGetTextureHandleARB(textureId);
+            // glMakeTextureHandleResidentARB(material.normalTexture);
         }
+
+        // Store texture bindings
+        textureBindings.push_back(material.baseColorTexture);
+        textureBindings.push_back(material.normalTexture);
     }
 
     // Create material buffer
@@ -384,10 +390,12 @@ gltfmodel::GLTFModel::~GLTFModel()
 
     glDeleteVertexArrays(1, &vertexArrayObject);
 
-    for (GLuint64 handle : textureHandles)
+    /*for (GLuint64 handle : textureHandles)
     {
         glMakeTextureHandleNonResidentARB(handle);
-    }
+    }*/
+
+    glDeleteTextures(textureBindings.size(), textureBindings.data());
 }
 
 void gltfmodel::GLTFModel::render()
@@ -400,6 +408,9 @@ void gltfmodel::GLTFModel::render()
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
+    // Bind all textures at once using texture handles
+    glBindTextures(textureBindings[0], textureBindings.size(), textureBindings.data());
+
     // Bind indirect command buffer
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, drawCommandBuffer);
 
@@ -411,6 +422,11 @@ void gltfmodel::GLTFModel::render()
             drawCommands.size(),// Number of commands
             0                   // Stride (0 means tightly packed)
     );
+
+    // Reset bindings
+    glBindVertexArray(0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
 }
 
 std::vector<gltfmodel::Light> gltfmodel::GLTFModel::getLights() const

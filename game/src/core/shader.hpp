@@ -37,6 +37,8 @@ public:
 
     GLuint getSSBOLocation(std::string_view bufferName) const;
 
+    GLuint getSamplerUniformLocation(std::string_view name) const;
+
     template<typename T>
     void updateBufferData(std::string_view bufferName, const std::vector<T>& data, GLintptr offset = 0) const
     {

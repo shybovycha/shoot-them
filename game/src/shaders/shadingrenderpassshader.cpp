@@ -116,17 +116,22 @@ void deferredrendering::shaders::ShadingRenderPassShader::set_viewPos(glm::vec3 
 
 void deferredrendering::shaders::ShadingRenderPassShader::bindPositionTexture(GLuint textureId) const
 {
-    glBindSampler(textureId, positionSampler_location);
+    glBindTextureUnit(0, textureId);
+    // glBindSampler(0, positionSampler_location);
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::bindNormalTexture(GLuint textureId) const
 {
-    glBindSampler(textureId, normalSampler_location);
+    glBindTextureUnit(1, textureId);
+    // glBindSampler(1, normalSampler_location);
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::bindAlbedoSpecTexture(GLuint textureId) const
 {
-    glBindSampler(textureId, albedoSpecSampler_location);
+    // glBindSampler(textureId, albedoSpecSampler_location);
+    // setInt(albedoSpecSampler_location, textureId);
+    glBindTextureUnit(2, textureId);
+    // glBindSampler(2, albedoSpecSampler_location);
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::set_lights(std::vector<Light> value) const
