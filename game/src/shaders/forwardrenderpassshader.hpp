@@ -22,8 +22,13 @@ namespace deferredrendering
 
         struct Material {
             glm::vec4 baseColorFactor;
+#ifdef _DEBUG
+            GLuint baseColorTexture;
+            GLuint normalTexture;
+#else
             uint64_t baseColorTexture;
             uint64_t normalTexture;
+#endif
             float metallicFactor;
             float roughnessFactor;
             glm::vec2 padding;

@@ -1,11 +1,8 @@
 #include "scene2.hpp"
 
 scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
-    : Scene(windowManager, sceneManager)
+    : DeferredRenderingScene(windowManager, sceneManager)
 {
-    forwardRenderPassShader = std::make_unique<deferredrendering::shaders::ForwardRenderPassShader>();
-    shadingRenderPassShader = std::make_unique<deferredrendering::shaders::ShadingRenderPassShader>();
-
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Egypt2.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
@@ -22,90 +19,6 @@ scene2::Scene2::Scene2(WindowManager* windowManager, SceneManager* sceneManager)
     cameraOrientation = glm::lookAtRH(cameraPosition, cameraForward, cameraUp);
 
     fov = 45.0f;
-
-    // setup screen space quad for deferred rendering
-    {
-        // 3 floats for position, 2 floats for UV, 4 vertices for a quad
-        std::array<float, (3 + 2) * 4> quadVertices[] = {
-                // positions        // texture Coords
-                -1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-                -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-                1.0f, 1.0f, 0.0f,   1.0f, 1.0f,
-                1.0f, -1.0f, 0.0f,  1.0f, 0.0f,
-        };
-
-        // Setup plane VAO
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-
-        // Position attribute
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
-
-        // TexCoords attribute
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
-
-        // Cleanup
-        glBindVertexArray(0);
-    }
-
-    // setup deferred rendering buffers
-    {
-        unsigned int width = windowManager->getWindowSize().x;
-        unsigned int height = windowManager->getWindowSize().y;
-
-        glCreateBuffers(1, &lightsBuffer);
-        glNamedBufferStorage(lightsBuffer, lights.size() * sizeof(deferredrendering::shaders::Light),
-                             lights.data(), GL_DYNAMIC_STORAGE_BIT);
-
-        glGenFramebuffers(1, &gBuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-
-        // Position buffer
-        glGenTextures(1, &gPositionTexture);
-        glBindTexture(GL_TEXTURE_2D, gPositionTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPositionTexture, 0);
-
-        // Normal buffer
-        glGenTextures(1, &gNormalTexture);
-        glBindTexture(GL_TEXTURE_2D, gNormalTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormalTexture, 0);
-
-        // Albedo + Specular buffer
-        glGenTextures(1, &gAlbedoSpecTexture);
-        glBindTexture(GL_TEXTURE_2D, gAlbedoSpecTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpecTexture, 0);
-
-        // Tell OpenGL which color attachments we'll use
-        GLuint attachments[3] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
-        glDrawBuffers(3, attachments);
-
-        // Create and attach depth buffer
-        glGenRenderbuffers(1, &rboDepthBuffer);
-        glBindRenderbuffer(GL_RENDERBUFFER, rboDepthBuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepthBuffer);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        {
-            throw std::runtime_error("Framebuffer is not complete");
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
 }
 
 scene2::Scene2::~Scene2()
@@ -147,69 +60,45 @@ void scene2::Scene2::handleCursorPositionEvent(double x, double y)
     windowManager->setCursorPosition(windowSize * 0.5f);
 }
 
-void scene2::Scene2::render(float dt)
+void scene2::Scene2::forwardRenderPass(float dt, deferredrendering::shaders::ForwardRenderPassShader* shader)
 {
-    // forward rendering pass
     {
-        glEnable(GL_DEPTH_TEST);
+        glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
 
-        glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::vec2 windowSize = windowManager->getWindowSize();
 
-        forwardRenderPassShader->use();
+        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
-        {
-            glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-            glm::vec2 windowSize = windowManager->getWindowSize();
+        shader->set_modelMatrix(modelMatrix);
+        shader->set_viewMatrix(view);
+        shader->set_projectionMatrix(projection);
 
-            glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
-
-            glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-            forwardRenderPassShader->set_modelMatrix(modelMatrix);
-            forwardRenderPassShader->set_viewMatrix(view);
-            forwardRenderPassShader->set_projectionMatrix(projection);
-
-            sceneModel->render();
-        }
-
-        // render rifle
-        {
-            glm::mat4 view = glm::mat4(1.0f);
-            glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
-
-            glm::vec2 windowSize = windowManager->getWindowSize();
-
-            glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
-
-            glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
-
-            forwardRenderPassShader->set_modelMatrix(modelMatrix);
-            forwardRenderPassShader->set_viewMatrix(view);
-            forwardRenderPassShader->set_projectionMatrix(projection);
-
-            rifleModel->render();
-        }
+        sceneModel->render();
     }
 
-    // shading rendering pass
+    // render rifle
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glm::mat4 view = glm::mat4(1.0f);
+        glm::vec3 forward = glm::vec3(view[0][2], view[1][2], view[2][2]);
 
-        shadingRenderPassShader->use();
+        glm::vec2 windowSize = windowManager->getWindowSize();
 
-        shadingRenderPassShader->bindPositionTexture(gPositionTexture);
-        shadingRenderPassShader->bindNormalTexture(gNormalTexture);
-        shadingRenderPassShader->bindAlbedoSpecTexture(gAlbedoSpecTexture);
+        glm::mat4 projection = glm::perspective(glm::radians(fov), (float) windowSize.x / (float) windowSize.y, 0.1f, 1000.0f);
 
-        shadingRenderPassShader->set_viewPos(cameraPosition);
+        glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(0.15f, -0.2f, -0.8f)), glm::vec3(0.5f));
 
-        shadingRenderPassShader->set_lights(lights, lightsBuffer);
+        shader->set_modelMatrix(modelMatrix);
+        shader->set_viewMatrix(view);
+        shader->set_projectionMatrix(projection);
 
-        glBindVertexArray(quadVAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindVertexArray(0);
+        rifleModel->render();
     }
+}
+
+void scene2::Scene2::shadingRenderPass(float dt, deferredrendering::shaders::ShadingRenderPassShader* shader)
+{
+    shader->set_lights(lights);
+    shader->set_viewPos(cameraPosition);
 }

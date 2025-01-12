@@ -246,12 +246,16 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
             glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            // material.baseColorTexture = textureId; // no bindless textures
-
+#ifdef _DEBUG
+            // no bindless textures
+            material.baseColorTexture = textureId;
+            textureBindings.push_back(material.baseColorTexture);
+#else
             material.baseColorTexture = glGetTextureHandleARB(textureId);
             glMakeTextureHandleResidentARB(material.baseColorTexture);
 
             textureHandles.push_back(material.baseColorTexture);
+#endif
         }
 
         // Normal texture
@@ -268,18 +272,18 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
             glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            // material.normalTexture = textureId; // no bindless textures
+#ifdef _DEBUG
+            // no bindless textures
+            material.normalTexture = textureId;
+            textureBindings.push_back(material.normalTexture);
+#else
 
             material.normalTexture = glGetTextureHandleARB(textureId);
             glMakeTextureHandleResidentARB(material.normalTexture);
 
             textureHandles.push_back(material.normalTexture);
+#endif
         }
-
-        // no bindless textures
-        // Store texture bindings
-        // textureBindings.push_back(material.baseColorTexture);
-        // textureBindings.push_back(material.normalTexture);
     }
 
     // Create material buffer
@@ -372,12 +376,15 @@ gltfmodel::GLTFModel::~GLTFModel()
 
     glDeleteVertexArrays(1, &vertexArrayObject);
 
+#ifdef _DEBUG
+    // no bindless textures
+    glDeleteTextures(textureBindings.size(), textureBindings.data());
+#else
     for (GLuint64 handle : textureHandles)
     {
         glMakeTextureHandleNonResidentARB(handle);
     }
-
-    // glDeleteTextures(textureBindings.size(), textureBindings.data()); // no bindless textures
+#endif
 }
 
 void gltfmodel::GLTFModel::render()
@@ -389,8 +396,11 @@ void gltfmodel::GLTFModel::render()
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
+#ifdef _DEBUG
+    // no bindless textures
     // Bind all textures at once using texture handles
-    // glBindTextures(textureBindings[0], textureBindings.size(), textureBindings.data()); // no bindless textures
+    glBindTextures(textureBindings[0], textureBindings.size(), textureBindings.data());
+#endif
 
     // Bind indirect command buffer
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, drawCommandBuffer);

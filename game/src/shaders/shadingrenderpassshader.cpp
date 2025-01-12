@@ -117,6 +117,15 @@ deferredrendering::shaders::ShadingRenderPassShader::ShadingRenderPassShader()
 
     numLights_location = getUniformLocation("numLights");
     lights_buffer_location = getSSBOLocation("LightsBuffer");
+
+    glCreateBuffers(1, &lightsBuffer);
+    /*glNamedBufferStorage(lightsBuffer, 0 * sizeof(deferredrendering::shaders::Light),
+                         0, GL_DYNAMIC_STORAGE_BIT);*/
+}
+
+deferredrendering::shaders::ShadingRenderPassShader::~ShadingRenderPassShader()
+{
+    glDeleteBuffers(1, &lightsBuffer);
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::set_viewPos(glm::vec3 value) const
@@ -139,10 +148,13 @@ void deferredrendering::shaders::ShadingRenderPassShader::bindAlbedoSpecTexture(
     glBindTextureUnit(2, textureId);
 }
 
-void deferredrendering::shaders::ShadingRenderPassShader::set_lights(std::vector<Light> value, GLuint buffer) const
+void deferredrendering::shaders::ShadingRenderPassShader::set_lights(std::vector<Light> value) const
 {
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, buffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, lightsBuffer);
 
-    updateBufferData(lights_buffer_location, value);
+    glNamedBufferStorage(lightsBuffer, value.size() * sizeof(deferredrendering::shaders::Light),
+                         value.data(), GL_DYNAMIC_STORAGE_BIT);
+
+    // updateBufferData(lights_buffer_location, value);
     setInt(numLights_location, value.size());
 }

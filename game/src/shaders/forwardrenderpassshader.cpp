@@ -45,10 +45,57 @@ void main() {
 }
 )glsl";
 
+#ifdef _DEBUG
+const std::string_view FRAGMENT_SHADER_SOURCE = R"glsl(
+#version 460 core
+
+struct Material {
+    vec4 baseColorFactor;
+    uint baseColorTexture;
+    uint normalTexture;
+    float metallicFactor;
+    float roughnessFactor;
+    vec2 padding;
+};
+
+layout (location = 0) in vec3 fragPos;
+layout (location = 1) in vec2 texCoord;
+layout (location = 2) in vec3 normal;
+layout (location = 3) in flat uint materialIndex;
+layout (location = 4) in mat4 modelTransform;
+
+layout(std430, binding = 1) readonly buffer MaterialBuffer {
+    Material materials[];
+};
+
+const uint MAX_TEXTURES = 16;
+layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];    // Array of base color & normal map textures
+
+uniform mat4 view;
+
+layout (location = 0) out vec4 gPosition;
+layout (location = 1) out vec4 gNormal;
+layout (location = 2) out vec4 gAlbedoSpec;
+
+void main() {
+    Material material = materials[materialIndex];
+
+    // no bindless textures - good for using with RenderDoc
+    vec4 baseColor = texture(textures[material.baseColorTexture], texCoord);
+    vec3 normal = texture(textures[material.normalTexture], texCoord).rgb;
+
+    // Apply material properties
+    vec3 finalColor = baseColor.rgb * material.baseColorFactor.rgb;
+
+    // Outputs
+    gPosition = vec4(fragPos, 1.0);
+    gNormal = vec4(normal, 1.0);
+    gAlbedoSpec = vec4(finalColor, 1.0);
+}
+)glsl";
+#else
 const std::string_view FRAGMENT_SHADER_SOURCE = R"glsl(
 #version 460
-
-// if not for bindless textures, could have used core profile: #version 460 core
 
 #extension GL_ARB_bindless_texture : require
 #extension GL_ARB_shader_storage_buffer_object : require
@@ -73,11 +120,6 @@ layout(std430, binding = 1) readonly buffer MaterialBuffer {
     Material materials[];
 };
 
-// #region no bindless textures
-// const uint MAX_TEXTURES = 16;
-// layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];    // Array of base color & normal map textures
-// #endregion
-
 uniform mat4 view;
 
 layout (location = 0) out vec4 gPosition;
@@ -86,12 +128,6 @@ layout (location = 2) out vec4 gAlbedoSpec;
 
 void main() {
     Material material = materials[materialIndex];
-
-    // #region no bindless textures
-    // Without bindless textures - good for using with RenderDoc
-    // vec4 baseColor = texture(textures[material.baseColorTexture], texCoord);
-    // vec3 normal = texture(textures[material.normalTexture], texCoord).rgb;
-    // #endregion
 
     // Sample using bindless texture handle
     vec4 baseColor = texture(sampler2D(material.baseColorTexture), texCoord);
@@ -106,6 +142,8 @@ void main() {
     gAlbedoSpec = vec4(finalColor, 1.0);
 }
 )glsl";
+#endif
+
 
 deferredrendering::shaders::ForwardRenderPassShader::ForwardRenderPassShader()
     : Shader(VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE)

@@ -9,9 +9,9 @@ set(SOURCES
     "src/core/shader.cpp"
     "src/core/gltfmodel.cpp"
     "src/core/windowmanager.cpp"
+    "src/core/deferredrenderingscene.cpp"
     "src/scenes/scene1.cpp"
     "src/scenes/scene2.cpp"
-    "src/shaders/sceneshader.cpp"
     "src/shaders/forwardrenderpassshader.cpp"
     "src/shaders/shadingrenderpassshader.cpp")
 

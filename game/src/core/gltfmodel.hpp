@@ -14,10 +14,13 @@ namespace gltfmodel
 
     struct alignas(16) MaterialData {
         glm::vec4 baseColorFactor;
-        // GLuint baseColorTexture; // no bindless textures
-        // GLuint normalTexture; // no bindless textures
+#ifdef _DEBUG
+        GLuint baseColorTexture; // no bindless textures
+        GLuint normalTexture; // no bindless textures
+#else
         GLuint64 baseColorTexture;
         GLuint64 normalTexture;
+#endif
         float metallicFactor;
         float roughnessFactor;
         glm::vec2 padding;
@@ -68,8 +71,11 @@ namespace gltfmodel
 
         GLuint vertexArrayObject;
 
-        // std::vector<GLuint> textureBindings; // no bindless textures
+#ifdef _DEBUG
+        std::vector<GLuint> textureBindings; // no bindless textures
+#else
         std::vector<GLuint64> textureHandles;
+#endif
 
         std::vector<MeshData> meshes;
         std::vector<MaterialData> materials;

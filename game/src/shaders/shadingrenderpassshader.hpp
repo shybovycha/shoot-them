@@ -20,6 +20,8 @@ namespace deferredrendering
         public:
             ShadingRenderPassShader();
 
+            ~ShadingRenderPassShader();
+
             void set_viewPos(glm::vec3 value) const;
 
             void bindPositionTexture(GLuint textureId) const;
@@ -28,7 +30,7 @@ namespace deferredrendering
 
             void bindAlbedoSpecTexture(GLuint textureId) const;
 
-            void set_lights(std::vector<Light> value, GLuint buffer) const;
+            void set_lights(std::vector<Light> value) const;
 
         private:
             GLuint viewPos_location;
@@ -39,6 +41,8 @@ namespace deferredrendering
 
             GLuint numLights_location;
             GLuint lights_buffer_location;
+
+            GLuint lightsBuffer;
         };
     }
 }
