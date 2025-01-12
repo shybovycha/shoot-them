@@ -68,7 +68,7 @@ layout(std430, binding = 1) readonly buffer MaterialBuffer {
     Material materials[];
 };
 
-const uint MAX_TEXTURES = 16;
+const uint MAX_TEXTURES = 32;
 layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];    // Array of base color & normal map textures
 
 uniform mat4 view;
