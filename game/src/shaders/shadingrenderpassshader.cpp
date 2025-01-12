@@ -1,6 +1,17 @@
 #include "shadingrenderpassshader.hpp"
 
 const std::string_view VERTEX_SHADER_SOURCE = R"glsl(
+#version 460 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
+
+layout (location = 0) out vec2 TexCoords;
+
+void main() {
+    TexCoords = aTexCoords;
+    gl_Position = vec4(aPos, 1.0);
+}
 )glsl";
 
 const std::string_view FRAGMENT_SHADER_SOURCE = R"glsl(
@@ -10,9 +21,9 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D gPosition;
-uniform sampler2D gNormal;
-uniform sampler2D gAlbedoSpec;
+layout(binding = 0) uniform sampler2D gPosition;
+layout(binding = 1) uniform sampler2D gNormal;
+layout(binding = 2) uniform sampler2D gAlbedoSpec;
 
 uniform vec3 viewPos;
 
@@ -28,27 +39,27 @@ uniform Light lights[MAX_LIGHTS];
 uniform int numLights;
 
 // PBR functions
-float DistributionGGX(vec3 N, vec3 H, float roughness);
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-vec3 fresnelSchlick(float cosTheta, vec3 F0);
+// float DistributionGGX(vec3 N, vec3 H, float roughness);
+// float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+// vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
 void main() {
     // Get G-buffer values
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
-    float Metallic = texture(gAlbedoSpec, TexCoords).a;
-    float Roughness = texture(gAlbedoSpec, TexCoords).a; // Using metallic as roughness for simplicity
+    // float Metallic = texture(gAlbedoSpec, TexCoords).a;
+    // float Roughness = texture(gAlbedoSpec, TexCoords).a; // Using metallic as roughness for simplicity
     
     vec3 N = normalize(Normal);
     vec3 V = normalize(viewPos - FragPos);
     
     // Calculate reflectance at normal incidence
-    vec3 F0 = vec3(0.04);
-    F0 = mix(F0, Albedo, Metallic);
-    
     // Reflectance equation
     vec3 Lo = vec3(0.0);
+
+    /*vec3 F0 = vec3(0.04);
+    F0 = mix(F0, Albedo, Metallic);
     
     for(int i = 0; i < numLights; i++) {
         vec3 L = normalize(lights[i].position - FragPos);
@@ -72,7 +83,7 @@ void main() {
         
         float NdotL = max(dot(N, L), 0.0);
         Lo += (kD * Albedo / PI + specular) * radiance * NdotL;
-    }
+    }*/
     
     vec3 ambient = vec3(0.03) * Albedo;
     vec3 color = ambient + Lo;

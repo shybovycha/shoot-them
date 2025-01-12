@@ -9,10 +9,10 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
-    for (const auto& l : sceneModel->getLights())
+    /*for (const auto& l : sceneModel->getLights())
     {
         lights.push_back(sceneshader::Light { .color = l.color, .position = l.position, .intensity = l.intensity, .range = l.range });
-    }
+    }*/
 
     // somehow vector iterators are from different vectors here?
     /*lights.insert(
