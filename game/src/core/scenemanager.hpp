@@ -2,6 +2,7 @@
 
 #include "../stdafx.hpp"
 
+#include "scene.hpp"
 #include "scenes.hpp"
 
 class SceneManager

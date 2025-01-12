@@ -2,6 +2,9 @@
 
 #include "../stdafx.hpp"
 
+#include "../scenes/scene1.hpp"
+#include "../scenes/scene2.hpp"
+
 #include "scenemanager.hpp"
 #include "windowmanager.hpp"
 
