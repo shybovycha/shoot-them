@@ -246,9 +246,12 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
             glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            material.baseColorTexture = textureId;
-            // material.baseColorTexture = glGetTextureHandleARB(textureId);
-            // glMakeTextureHandleResidentARB(material.baseColorTexture);
+            // material.baseColorTexture = textureId; // no bindless textures
+
+            material.baseColorTexture = glGetTextureHandleARB(textureId);
+            glMakeTextureHandleResidentARB(material.baseColorTexture);
+
+            textureHandles.push_back(material.baseColorTexture);
         }
 
         // Normal texture
@@ -265,14 +268,18 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
             glTextureParameteri(textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTextureParameteri(textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-            material.normalTexture = textureId;
-            // material.normalTexture = glGetTextureHandleARB(textureId);
-            // glMakeTextureHandleResidentARB(material.normalTexture);
+            // material.normalTexture = textureId; // no bindless textures
+
+            material.normalTexture = glGetTextureHandleARB(textureId);
+            glMakeTextureHandleResidentARB(material.normalTexture);
+
+            textureHandles.push_back(material.normalTexture);
         }
 
+        // no bindless textures
         // Store texture bindings
-        textureBindings.push_back(material.baseColorTexture);
-        textureBindings.push_back(material.normalTexture);
+        // textureBindings.push_back(material.baseColorTexture);
+        // textureBindings.push_back(material.normalTexture);
     }
 
     // Create material buffer
@@ -316,30 +323,6 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
     {
         processNode(model, nodeIndex, glm::mat4(1.0f), lights);
     }
-
-    /*for (auto& light : model.lights)
-    {
-        glm::vec3 color(light.color[0], light.color[1], light.color[2]);
-
-        float intensity = light.intensity;
-        float range = light.range;
-
-        auto parentNode = std::find_if(model.nodes.begin(), model.nodes.end(), [light](tinygltf::Node& item) { return item.name == light.name; });
-
-        if (parentNode != model.nodes.end())
-        {
-            auto pos = (*parentNode).translation;
-
-            glm::vec3 position(pos[0], pos[1], pos[2]);
-
-            lights.push_back(Light {color, position, intensity, range});
-        }
-    }*/
-
-    // Create lights buffer
-    /*glCreateBuffers(1, &lightsBuffer);
-    glNamedBufferStorage(lightsBuffer, lights.size() * sizeof(Light),
-                         lights.data(), GL_DYNAMIC_STORAGE_BIT);*/
 
     // Create mesh buffer
     glCreateBuffers(1, &meshBuffer);
@@ -385,17 +368,16 @@ gltfmodel::GLTFModel::~GLTFModel()
     glDeleteBuffers(1, &indexBuffer);
     glDeleteBuffers(1, &materialBuffer);
     glDeleteBuffers(1, &meshBuffer);
-    // glDeleteBuffers(1, &lightsBuffer);
     glDeleteBuffers(1, &drawCommandBuffer);
 
     glDeleteVertexArrays(1, &vertexArrayObject);
 
-    /*for (GLuint64 handle : textureHandles)
+    for (GLuint64 handle : textureHandles)
     {
         glMakeTextureHandleNonResidentARB(handle);
-    }*/
+    }
 
-    glDeleteTextures(textureBindings.size(), textureBindings.data());
+    // glDeleteTextures(textureBindings.size(), textureBindings.data()); // no bindless textures
 }
 
 void gltfmodel::GLTFModel::render()
@@ -403,13 +385,12 @@ void gltfmodel::GLTFModel::render()
     // Bind SSBOs
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, meshBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialBuffer);
-    // glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, lightsBuffer);
 
     glBindVertexArray(vertexArrayObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
     // Bind all textures at once using texture handles
-    glBindTextures(textureBindings[0], textureBindings.size(), textureBindings.data());
+    // glBindTextures(textureBindings[0], textureBindings.size(), textureBindings.data()); // no bindless textures
 
     // Bind indirect command buffer
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, drawCommandBuffer);

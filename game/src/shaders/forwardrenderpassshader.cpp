@@ -46,12 +46,18 @@ void main() {
 )glsl";
 
 const std::string_view FRAGMENT_SHADER_SOURCE = R"glsl(
-#version 460 core
+#version 460
+
+// if not for bindless textures, could have used core profile: #version 460 core
+
+#extension GL_ARB_bindless_texture : require
+#extension GL_ARB_shader_storage_buffer_object : require
+#extension GL_ARB_gpu_shader_int64 : require
 
 struct Material {
     vec4 baseColorFactor;
-    uint baseColorTexture;
-    uint normalTexture;
+    uint64_t baseColorTexture;
+    uint64_t normalTexture;
     float metallicFactor;
     float roughnessFactor;
     vec2 padding;
@@ -67,9 +73,10 @@ layout(std430, binding = 1) readonly buffer MaterialBuffer {
     Material materials[];
 };
 
-const uint MAX_TEXTURES = 16;
-
-layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];    // Array of base color & normal map textures
+// #region no bindless textures
+// const uint MAX_TEXTURES = 16;
+// layout(binding = 0) uniform sampler2D textures[MAX_TEXTURES];    // Array of base color & normal map textures
+// #endregion
 
 uniform mat4 view;
 
@@ -79,11 +86,17 @@ layout (location = 2) out vec4 gAlbedoSpec;
 
 void main() {
     Material material = materials[materialIndex];
-    
+
+    // #region no bindless textures
+    // Without bindless textures - good for using with RenderDoc
+    // vec4 baseColor = texture(textures[material.baseColorTexture], texCoord);
+    // vec3 normal = texture(textures[material.normalTexture], texCoord).rgb;
+    // #endregion
+
     // Sample using bindless texture handle
-    vec4 baseColor = texture(textures[material.baseColorTexture], texCoord);
-    vec3 normal = texture(textures[material.normalTexture], texCoord).rgb;
-    
+    vec4 baseColor = texture(sampler2D(material.baseColorTexture), texCoord);
+    vec3 normal = texture(sampler2D(material.normalTexture), texCoord).rgb;
+
     // Apply material properties
     vec3 finalColor = baseColor.rgb * material.baseColorFactor.rgb;
 
