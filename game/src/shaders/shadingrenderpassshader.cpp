@@ -34,63 +34,77 @@ struct Light {
     float range;
 };
 
-const int MAX_LIGHTS = 16;
-uniform Light lights[MAX_LIGHTS];
+layout(std430, binding = 2) readonly buffer LightsBuffer {
+    Light lights[];
+};
+
 uniform int numLights;
 
-// PBR functions
-// float DistributionGGX(vec3 N, vec3 H, float roughness);
-// float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-// vec3 fresnelSchlick(float cosTheta, vec3 F0);
+float getDistanceAttenuation(float distance, float radius) {
+    // Normalize distance by radius
+    float normalizedDist = distance / radius;
+    
+    // Smooth falloff to zero at radius edge
+    float smoothFalloff = 1.0 - smoothstep(0.75, 1.0, normalizedDist);
+    
+    // Combine with inverse square falloff
+    return smoothFalloff / (distance * distance + 1.0);
+}
+
+vec3 CalcPointLight(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3 viewDir) {
+    vec3 lightDir = normalize(light.position - fragPos);
+
+    // attenuation
+    float distance    = length(light.position - fragPos);
+
+    if (distance > light.range) {
+        return vec3(0.0);
+    }
+
+    float attenuation = getDistanceAttenuation(distance, light.range);
+
+    vec3 vec_attenuation = vec3(1.0, 0.09, 0.032);
+
+    attenuation *= 1.0 / (vec_attenuation.x + 
+                             vec_attenuation.y * distance +
+                             vec_attenuation.z * distance * distance);
+
+    float intensity = min(light.intensity, 10.0);
+
+    // combine results
+    // Diffuse
+    float diff = max(dot(normal, lightDir), 0.0);
+    vec3 diffuse = light.color * diff * intensity;
+
+    // Specular
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+    vec3 specular = light.color * spec * intensity;
+
+    return baseColor * diffuse * attenuation + specular * attenuation;
+}
 
 void main() {
     // Get G-buffer values
     vec3 FragPos = texture(gPosition, TexCoords).rgb;
     vec3 Normal = texture(gNormal, TexCoords).rgb;
     vec3 Albedo = texture(gAlbedoSpec, TexCoords).rgb;
-    // float Metallic = texture(gAlbedoSpec, TexCoords).a;
-    // float Roughness = texture(gAlbedoSpec, TexCoords).a; // Using metallic as roughness for simplicity
     
     vec3 N = normalize(Normal);
     vec3 V = normalize(viewPos - FragPos);
-    
-    // Calculate reflectance at normal incidence
-    // Reflectance equation
-    vec3 Lo = vec3(0.0);
 
-    /*vec3 F0 = vec3(0.04);
-    F0 = mix(F0, Albedo, Metallic);
+    vec3 Lo = vec3(0.0);
     
-    for(int i = 0; i < numLights; i++) {
-        vec3 L = normalize(lights[i].position - FragPos);
-        vec3 H = normalize(V + L);
-        float distance = length(lights[i].position - FragPos);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = lights[i].color * lights[i].intensity * attenuation;
-        
-        // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, Roughness);
-        float G = GeometrySmith(N, V, L, Roughness);
-        vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-        
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        vec3 specular = numerator / denominator;
-        
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - Metallic;
-        
-        float NdotL = max(dot(N, L), 0.0);
-        Lo += (kD * Albedo / PI + specular) * radiance * NdotL;
-    }*/
+    for (int i = 0; i < numLights; i++) {
+        Lo += CalcPointLight(lights[i], Albedo, Normal, FragPos, V); 
+    }
     
     vec3 ambient = vec3(0.03) * Albedo;
     vec3 color = ambient + Lo;
     
     // HDR tonemapping and gamma correction
-    color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0/2.2));
+    // color = color / (color + vec3(1.0));
+    // color = pow(color, vec3(1.0 / 2.2));
     
     FragColor = vec4(color, 1.0);
 }
@@ -106,7 +120,7 @@ deferredrendering::shaders::ShadingRenderPassShader::ShadingRenderPassShader()
     albedoSpecSampler_location = getUniformLocation("gAlbedoSpec");
 
     numLights_location = getUniformLocation("numLights");
-    lights_location = getUniformLocation("lights");
+    lights_buffer_location = getSSBOLocation("LightsBuffer");
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::set_viewPos(glm::vec3 value) const
@@ -117,25 +131,22 @@ void deferredrendering::shaders::ShadingRenderPassShader::set_viewPos(glm::vec3 
 void deferredrendering::shaders::ShadingRenderPassShader::bindPositionTexture(GLuint textureId) const
 {
     glBindTextureUnit(0, textureId);
-    // glBindSampler(0, positionSampler_location);
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::bindNormalTexture(GLuint textureId) const
 {
     glBindTextureUnit(1, textureId);
-    // glBindSampler(1, normalSampler_location);
 }
 
 void deferredrendering::shaders::ShadingRenderPassShader::bindAlbedoSpecTexture(GLuint textureId) const
 {
-    // glBindSampler(textureId, albedoSpecSampler_location);
-    // setInt(albedoSpecSampler_location, textureId);
     glBindTextureUnit(2, textureId);
-    // glBindSampler(2, albedoSpecSampler_location);
 }
 
-void deferredrendering::shaders::ShadingRenderPassShader::set_lights(std::vector<Light> value) const
+void deferredrendering::shaders::ShadingRenderPassShader::set_lights(std::vector<Light> value, GLuint buffer) const
 {
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, buffer);
+
+    updateBufferData(lights_buffer_location, value);
     setInt(numLights_location, value.size());
-    // TODO: set lights[i]
 }

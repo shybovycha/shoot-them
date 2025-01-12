@@ -337,9 +337,9 @@ gltfmodel::GLTFModel::GLTFModel(std::string_view path)
     }*/
 
     // Create lights buffer
-    glCreateBuffers(1, &lightsBuffer);
+    /*glCreateBuffers(1, &lightsBuffer);
     glNamedBufferStorage(lightsBuffer, lights.size() * sizeof(Light),
-                         lights.data(), GL_DYNAMIC_STORAGE_BIT);
+                         lights.data(), GL_DYNAMIC_STORAGE_BIT);*/
 
     // Create mesh buffer
     glCreateBuffers(1, &meshBuffer);
@@ -385,7 +385,7 @@ gltfmodel::GLTFModel::~GLTFModel()
     glDeleteBuffers(1, &indexBuffer);
     glDeleteBuffers(1, &materialBuffer);
     glDeleteBuffers(1, &meshBuffer);
-    glDeleteBuffers(1, &lightsBuffer);
+    // glDeleteBuffers(1, &lightsBuffer);
     glDeleteBuffers(1, &drawCommandBuffer);
 
     glDeleteVertexArrays(1, &vertexArrayObject);

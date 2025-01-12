@@ -61,7 +61,7 @@ namespace gltfmodel
         GLuint indexBuffer;
         GLuint materialBuffer;
         GLuint meshBuffer;
-        GLuint lightsBuffer;
+        //GLuint lightsBuffer;
 
         GLuint drawCommandBuffer;
 

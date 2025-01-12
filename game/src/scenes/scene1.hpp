@@ -30,10 +30,9 @@ namespace scene1
 
         std::unique_ptr<gltfmodel::GLTFModel> sceneModel;
 
-        // std::unique_ptr<Shader> rifleShader;
         std::unique_ptr<gltfmodel::GLTFModel> rifleModel;
 
-        // std::vector<sceneshader::Light> lights;
+        std::vector<deferredrendering::shaders::Light> lights;
 
         glm::vec3 cameraUp;
         glm::vec3 cameraPosition;
@@ -47,6 +46,8 @@ namespace scene1
         GLuint gAlbedoSpecTexture;
         GLuint gBuffer;
         GLuint rboDepthBuffer;
+
+        GLuint lightsBuffer;
 
         GLuint quadVAO;
         GLuint quadVBO;

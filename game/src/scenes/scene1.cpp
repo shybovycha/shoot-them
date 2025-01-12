@@ -9,10 +9,10 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     sceneModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Forest1.glb");
     rifleModel = std::make_unique<gltfmodel::GLTFModel>("resources/models/old/Rifle2.glb");
 
-    /*for (const auto& l : sceneModel->getLights())
+    for (const auto& l : sceneModel->getLights())
     {
-        lights.push_back(sceneshader::Light { .color = l.color, .position = l.position, .intensity = l.intensity, .range = l.range });
-    }*/
+        lights.push_back(deferredrendering::shaders::Light { .color = l.color, .position = l.position, .intensity = l.intensity, .range = l.range });
+    }
 
     // somehow vector iterators are from different vectors here?
     /*lights.insert(
@@ -64,6 +64,10 @@ scene1::Scene1::Scene1(WindowManager* windowManager, SceneManager* sceneManager)
     {
         unsigned int width = windowManager->getWindowSize().x;
         unsigned int height = windowManager->getWindowSize().y;
+
+        glCreateBuffers(1, &lightsBuffer);
+        glNamedBufferStorage(lightsBuffer, lights.size() * sizeof(deferredrendering::shaders::Light),
+                             lights.data(), GL_DYNAMIC_STORAGE_BIT);
 
         glGenFramebuffers(1, &gBuffer);
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
@@ -208,6 +212,8 @@ void scene1::Scene1::render(float dt)
         shadingRenderPassShader->bindAlbedoSpecTexture(gAlbedoSpecTexture);
 
         shadingRenderPassShader->set_viewPos(cameraPosition);
+
+        shadingRenderPassShader->set_lights(lights, lightsBuffer);
 
         glBindVertexArray(quadVAO);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

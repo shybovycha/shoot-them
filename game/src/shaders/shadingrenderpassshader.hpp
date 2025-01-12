@@ -9,10 +9,10 @@ namespace deferredrendering
     namespace shaders
     {
         struct Light {
-            glm::vec3 color;
-            glm::vec3 position;
-            float intensity;
-            float range;
+            alignas(16) glm::vec3 color;
+            alignas(16) glm::vec3 position;
+            alignas(4) float intensity;
+            alignas(4) float range;
         };
 
         class ShadingRenderPassShader : public Shader
@@ -28,7 +28,7 @@ namespace deferredrendering
 
             void bindAlbedoSpecTexture(GLuint textureId) const;
 
-            void set_lights(std::vector<Light> value) const;
+            void set_lights(std::vector<Light> value, GLuint buffer) const;
 
         private:
             GLuint viewPos_location;
@@ -38,7 +38,7 @@ namespace deferredrendering
             GLuint albedoSpecSampler_location;
 
             GLuint numLights_location;
-            GLuint lights_location;
+            GLuint lights_buffer_location;
         };
     }
 }
