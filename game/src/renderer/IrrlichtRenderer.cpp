@@ -11,7 +11,7 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
 {
     irr::video::E_DRIVER_TYPE driverType = irr::video::EDT_OPENGL;
 
-    if (settings->driverName == "DirectX")
+    //if (settings->driverName == "DirectX")
     {
         driverType = irr::video::EDT_DIRECT3D9;
     }
@@ -41,11 +41,22 @@ void IrrlichtRenderer::init(std::shared_ptr<Settings> settings)
 
     drunkShaderCallback = new CDrunkShaderCallback();
 
-    irr::s32 drunkShader = gpu->addHighLevelShaderMaterialFromFiles(
-            "resources/shaders/identity.vert.glsl", "main", irr::video::EVST_VS_1_1,
-            "resources/shaders/drunk.frag.glsl", "main", irr::video::EPST_PS_1_1,
-            drunkShaderCallback, irr::video::EMT_SOLID, 0, irr::video::EGSL_DEFAULT
-    );
+    irr::s32 drunkShader;
+
+    if (device->getVideoDriver()->getDriverType() == irr::video::EDT_DIRECT3D9)
+    {
+        drunkShader = gpu->addHighLevelShaderMaterialFromFiles(
+                "resources/shaders/drunk.hlsl", "vertexMain", irr::video::EVST_VS_1_1,
+                "resources/shaders/drunk.hlsl", "pixelMain", irr::video::EPST_PS_1_1,
+                drunkShaderCallback, irr::video::EMT_SOLID, 0, irr::video::EGSL_DEFAULT);
+    }
+    else if (device->getVideoDriver()->getDriverType() == irr::video::EDT_OPENGL)
+    {
+        drunkShader = gpu->addHighLevelShaderMaterialFromFiles(
+                "resources/shaders/identity.vert.glsl", "main", irr::video::EVST_VS_1_1,
+                "resources/shaders/drunk.frag.glsl", "main", irr::video::EPST_PS_1_1,
+                drunkShaderCallback, irr::video::EMT_SOLID, 0, irr::video::EGSL_DEFAULT);
+    }
 
     screenRenderTarget = driver->addRenderTargetTexture(irr::core::dimension2d<irr::u32>(2048, 1024), "RTT0",
             irr::video::ECF_A8R8G8B8);
@@ -286,6 +297,13 @@ void IrrlichtRenderer::render()
     else if (gameState->getCurrentState() == GameStateType::PLAYING)
     {
         // update shader' data
+        irr::core::matrix4 worldViewProj;
+        worldViewProj = driver->getTransform(irr::video::ETS_PROJECTION);
+        worldViewProj *= driver->getTransform(irr::video::ETS_VIEW);
+        worldViewProj *= driver->getTransform(irr::video::ETS_WORLD);
+
+        drunkShaderCallback->setWorldViewProjectionMatrix(worldViewProj);
+
         drunkShaderCallback->setTime(timer->getTime() / 1000.f);
 
         // render scene to texture, using the shader as a material

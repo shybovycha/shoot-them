@@ -84,8 +84,12 @@ target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-audio)
 find_package(tinyxml2 CONFIG REQUIRED)
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE tinyxml2::tinyxml2)
 
-find_package(irrlicht CONFIG REQUIRED)
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE Irrlicht)
+target_include_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/irrlicht-1.8.5/include)
+target_link_directories(${EXECUTABLE_NAME} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/lib/irrlicht-1.8.5/lib/Win64-visualStudio)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE Irrlicht.lib)
+
+#find_package(irrlicht CONFIG REQUIRED)
+#target_link_libraries(${EXECUTABLE_NAME} PRIVATE Irrlicht)
 
 # Copy resources
 add_custom_command(
@@ -96,4 +100,9 @@ add_custom_command(
 add_custom_command(
     TARGET ${EXECUTABLE_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/data $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/data
+)
+
+add_custom_command(
+    TARGET ${EXECUTABLE_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/lib/irrlicht-1.8.5/bin/Win64-visualStudio/Irrlicht.dll $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>
 )

@@ -13,6 +13,9 @@ public:
 
     void setTime(irr::f32 _time);
 
+    void setWorldViewProjectionMatrix(irr::core::matrix4 worldViewProj);
+
 private:
     irr::f32 time;
+    irr::core::matrix4 worldViewProj;
 };
