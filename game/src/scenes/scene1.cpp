@@ -106,6 +106,13 @@ void scene1::Scene1::forwardRenderPass(float dt, deferredrendering::shaders::For
 
 void scene1::Scene1::shadingRenderPass(float dt, deferredrendering::shaders::ShadingRenderPassShader* shader)
 {
+    glm::mat4 view = glm::mat4_cast(cameraOrientation) * glm::translate(glm::mat4(1.0f), -glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -0.5f, 0.0f));
+
+    shader->set_viewMatrix(view);
+    shader->set_modelMatrix(modelMatrix);
+
     shader->set_lights(lights);
     shader->set_viewPos(cameraPosition);
 }

@@ -31,8 +31,15 @@ namespace deferredrendering
             void bindAlbedoSpecTexture(GLuint textureId) const;
 
             void set_lights(std::vector<Light> value) const;
+            
+            void set_modelMatrix(glm::mat4 value) const;
+
+            void set_viewMatrix(glm::mat4 value) const;
 
         private:
+            GLuint modelMatrix_location;
+            GLuint viewMatrix_location;
+
             GLuint viewPos_location;
 
             GLuint positionSampler_location;
