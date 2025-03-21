@@ -55,7 +55,7 @@ float getDistanceAttenuation(float distance, float radius) {
 }
 
 vec3 CalcPointLight1(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3 viewDir) {
-    vec3 lightPos = (view * vec4(light.position, 1.0)).xyz; // light.position; 
+    vec3 lightPos = light.position; // (view * vec4(light.position, 1.0)).xyz;
     vec3 lightDir = normalize(lightPos - fragPos);
 
     // attenuation
@@ -85,22 +85,21 @@ vec3 CalcPointLight1(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec
 }
 
 vec3 CalcPointLight2(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3 viewDir) {
-    vec3 lightPos = (view * vec4(light.position, 1.0)).xyz;
-
     // ambient
     vec3 ambient = 0.05 * baseColor;
-    
     // diffuse
-    vec3 lightDir = normalize(lightPos - fragPos);
+    vec3 lightDir = normalize(light.position - fragPos);
     vec3 normal1 = normalize(normal);
     float diff = max(dot(lightDir, normal1), 0.0);
     vec3 diffuse = diff * baseColor;
     
     // specular
+    // vec3 viewDir = normalize(viewPos - fragPos);
+    
     vec3 reflectDir = reflect(-lightDir, normal1);
     float spec = 0.0;
     
-    //if(blinn)
+    //if(true)
     {
         vec3 halfwayDir = normalize(lightDir + viewDir);  
         spec = pow(max(dot(normal1, halfwayDir), 0.0), 32.0);
@@ -110,21 +109,8 @@ vec3 CalcPointLight2(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec
     //    vec3 reflectDir = reflect(-lightDir, normal1);
     //    spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
     //}
-
-    float intensity = min(light.intensity, 0.0001);
-
-    float distance = 2.0; // length(lightPos - fragPos);
-
-    float attenuation = getDistanceAttenuation(distance, light.range);
-
-    vec3 vec_attenuation = vec3(1.0, 0.09, 0.032);
-
-    attenuation *= 1.0 / (vec_attenuation.x + 
-                             vec_attenuation.y * distance +
-                             vec_attenuation.z * distance * distance);
-
-    vec3 specular = spec * light.color;
-    return ambient + diffuse  * attenuation + specular * attenuation;
+    vec3 specular = vec3(0.3) * spec * light.color; // assuming bright white light color
+    return ambient + diffuse + specular;
 }
 
 void main() {
