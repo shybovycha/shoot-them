@@ -54,12 +54,36 @@ float getDistanceAttenuation(float distance, float radius) {
     return smoothFalloff / (distance * distance + 1.0);
 }
 
-vec3 CalcPointLight1(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3 viewDir) {
+vec3 CalcPointLight(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3 viewDir) {
     vec3 lightPos = light.position; // (view * vec4(light.position, 1.0)).xyz;
-    vec3 lightDir = normalize(lightPos - fragPos);
 
-    // attenuation
-    float distance    = length(lightPos - fragPos);
+    // ambient
+    vec3 ambient = 0.05 * baseColor;
+    
+    // diffuse
+    vec3 lightDir = normalize(lightPos - fragPos);
+    vec3 normal1 = normalize(normal);
+    float diff = max(dot(lightDir, normal1), 0.0);
+    vec3 diffuse = diff * baseColor;
+    
+    // specular
+    vec3 reflectDir = reflect(-lightDir, normal1);
+    float spec = 0.0;
+    
+    if(true)
+    {
+        vec3 halfwayDir = normalize(lightDir + viewDir);  
+        spec = pow(max(dot(normal1, halfwayDir), 0.0), 32.0);
+    }
+    else
+    {
+        vec3 reflectDir = reflect(-lightDir, normal1);
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
+    }
+
+    float intensity = min(light.intensity, 0.1);
+
+    float distance = length(lightPos - fragPos) * 0.1;
 
     float attenuation = getDistanceAttenuation(distance, light.range);
 
@@ -69,48 +93,8 @@ vec3 CalcPointLight1(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec
                              vec_attenuation.y * distance +
                              vec_attenuation.z * distance * distance);
 
-    float intensity = min(light.intensity, 1.0);
-
-    // combine results
-    // Diffuse
-    float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = light.color * diff * intensity;
-
-    // Specular
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
-    vec3 specular = light.color * spec * intensity;
-
-    return baseColor * 0.2 + diffuse * attenuation + specular * attenuation;
-}
-
-vec3 CalcPointLight2(Light light, vec3 baseColor, vec3 normal, vec3 fragPos, vec3 viewDir) {
-    // ambient
-    vec3 ambient = 0.05 * baseColor;
-    // diffuse
-    vec3 lightDir = normalize(light.position - fragPos);
-    vec3 normal1 = normalize(normal);
-    float diff = max(dot(lightDir, normal1), 0.0);
-    vec3 diffuse = diff * baseColor;
-    
-    // specular
-    // vec3 viewDir = normalize(viewPos - fragPos);
-    
-    vec3 reflectDir = reflect(-lightDir, normal1);
-    float spec = 0.0;
-    
-    //if(true)
-    {
-        vec3 halfwayDir = normalize(lightDir + viewDir);  
-        spec = pow(max(dot(normal1, halfwayDir), 0.0), 32.0);
-    }
-    //else
-    //{
-    //    vec3 reflectDir = reflect(-lightDir, normal1);
-    //    spec = pow(max(dot(viewDir, reflectDir), 0.0), 8.0);
-    //}
-    vec3 specular = vec3(0.3) * spec * light.color; // assuming bright white light color
-    return ambient + diffuse + specular;
+    vec3 specular = spec * light.color * intensity;
+    return ambient + diffuse * attenuation + specular * attenuation;
 }
 
 void main() {
@@ -125,7 +109,7 @@ void main() {
     vec3 Lo = vec3(0.0);
     
     for (int i = 0; i < numLights; i++) {
-        Lo += CalcPointLight2(lights[i], Albedo, Normal, FragPos, V); 
+        Lo += CalcPointLight(lights[i], Albedo, Normal, FragPos, V); 
     }
     
     vec3 ambient = vec3(0.1) * Albedo;
